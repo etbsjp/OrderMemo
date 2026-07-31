@@ -7,7 +7,7 @@ WooCommerceの注文編集画面の「注文メモ」欄に、あらかじめ登
 ## 必要環境
 
 - WordPress 6.7 以上
-- PHP 8.3 以上
+- PHP 7.4 以上
 - WooCommerce（HPOS/従来型どちらの注文ストレージにも対応）
 
 ## 使い方
