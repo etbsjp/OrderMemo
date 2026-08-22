@@ -35,6 +35,11 @@ CLI 検証では Local の php.ini を `-c` で渡すこと。渡さないと「
 **サイトが停止しているように見える**（実際は動いている）。`<runId>` は
 `ls -d ~/Library/Application\ Support/Local/run/*/mysql/mysqld.sock` で特定する。
 
+## アンインストール
+
+★ `uninstall.php` はアンインストール時にデータを一切消さない方針（案A、task-queue #108）。
+`ormm_template` 投稿（利用者が作った定型文）を含め削除ロジックを足さないこと。
+
 ## 版数
 
 版数の置き場は `ordermemo.php` の `Version:` ヘッダの1箇所（`readme.txt` は無い）。

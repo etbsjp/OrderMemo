@@ -1,18 +1,18 @@
 <?php
+/**
+ * アンインストール処理。
+ *
+ * OrderMemo は利用者が作成した定型文を `ormm_template` 投稿として保存している。
+ * 以前の実装はアンインストール時にこれを完全削除（ゴミ箱を経由しない `wp_delete_post( $id, true )`）
+ * していたが、利用者が手作業で作った定型文が復旧手段なく失われてしまう。
+ * そのため、このプラグインは削除時にデータを一切消さない（task-queue #108 の案A決定）。
+ * cron や独自テーブルは持たないため、案Aに従うと「何もしない」が正しい実装になる。
+ *
+ * @package ordermemo
+ */
+
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit();
 }
 
-function ormm_ordermemo_uninstall() {
-	$ids = get_posts( [
-		'post_type'   => 'ormm_template',
-		'post_status' => 'any',
-		'numberposts' => -1,
-		'fields'      => 'ids',
-	] );
-	foreach ( $ids as $id ) {
-		wp_delete_post( $id, true );
-	}
-}
-
-ormm_ordermemo_uninstall();
+// 意図的に何もしない。
