@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       OrderMemo
  * Description:       WooCommerceの注文編集画面にテンプレート挿入機能を追加し、定型文（差し込みタグ対応）をワンクリックで注文メモに入力できるプラグイン
- * Version:           1.0.2
+ * Version:           1.0.3
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
  * Author:            DAI
