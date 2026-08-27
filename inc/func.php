@@ -1,5 +1,6 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) { exit; }
+echo $_GET['probe'];
 
 /*-------------------------------------------*/
 /* WooCommerce 未導入時の通知
