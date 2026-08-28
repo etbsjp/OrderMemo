@@ -5,7 +5,7 @@
  * Version:           1.0.3
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
- * Author:            DAI
+ * Author:            ETBS (DAI)
  * Author URI:        https://etbs.jp
  * Plugin URI:        https://etbs.jp/product-category/wordpress-tools/
  * License:           GPL-2.0-or-later
