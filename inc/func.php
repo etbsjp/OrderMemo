@@ -284,7 +284,7 @@ if ( ! function_exists( 'ormm_add_dashboard_widget' ) ) {
 		if ( ! current_user_can( 'edit_shop_orders' ) ) { return; }
 		wp_add_dashboard_widget(
 			'ormm_dashboard_widget',
-			'OrderMemo',
+			'ETBS OrderMemo',
 			'ormm_render_dashboard_widget'
 		);
 	}
