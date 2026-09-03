@@ -90,8 +90,13 @@ third-party action をタグ固定にしている判断・陽性対照・配布�
 - **既存指摘の基準値: 47 ERROR / 7 WARNING**（2026-08-28 実測・`WordPress-Extra`）。
   ★ 測り直すときは `vendor/bin/phpcs --standard=./.phpcs.xml.dist --report=summary $(git ls-files '*.php')`
   の形でのみ行う。素の phpcs は `.gitignore` を尊重しない
-- **`Requires PHP: 7.4` を宣言している。** 置き場は `ordermemo.php` の1箇所だけ（`readme.txt` は無い）。
-  CI の matrix `['7.4','8.3']` と**一致している状態を守ること**（片方だけ動かさない）
+- **`Requires PHP: 7.4` を宣言している。** 置き場は **`ordermemo.php:6` と `readme.txt:5` の2箇所**。
+  PUC（plugin-update-checker）は配信メタデータを組み立てる際、readme 側の `requires_php` で
+  ヘッダの値を上書きする（`inc/plugin-update-checker/Puc/v5p5/Vcs/PluginUpdateChecker.php`）。
+  この値は `Puc/v5p5/Plugin/Update.php` を経由して更新トランジェントに渡り、更新画面の出し分けに
+  使われるため、**`ordermemo.php` だけ直して `readme.txt` を直し忘れると、エラーも出ないまま
+  古い readme 側の値が配信され続ける。** 変更するときは必ず両方を同時に変え、
+  CI の matrix `['7.4','8.3']` も含めて**3点を揃えること**（1箇所だけ動かさない）
 - **`composer.json` の `name` は原本のまま**（`etbsjp/widget-shortcode-tools`）。
   `composer.lock` の `content-hash` と**ペアとして整合している**ので、これでよい。
   ★ 改名するなら `composer update --lock` も必ず走らせること
