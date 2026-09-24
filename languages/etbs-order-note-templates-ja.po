@@ -270,3 +270,15 @@ msgstr "%s がこのサイトでまだ有効なため、ETBS Order Note Template
 #: inc/legacy-guard.php:366
 msgid "The old plugin keeps working in the meantime."
 msgstr "それまでのあいだは、旧プラグインがそのまま動作します。"
+
+#: inc/func.php
+msgid "OrderMemo Pro (paid add-on)"
+msgstr "OrderMemo Pro（有料版）"
+
+#: inc/func.php
+msgid "More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers."
+msgstr "有料版の OrderMemo Pro では、注文ステータスが変わったときの自動挿入、注文一覧からのまとめて追加、追跡番号の差し込みができます。"
+
+#: inc/func.php
+msgid "Learn more about OrderMemo Pro"
+msgstr "OrderMemo Pro の詳細を見る"

@@ -331,6 +331,68 @@ if ( ! function_exists( 'ormm_should_show_pro_promotion' ) ) {
 	}
 }
 
+if ( ! function_exists( 'ormm_is_japanese_site' ) ) {
+	/**
+	 * Tells whether the site's display language is Japanese (the locale starts with "ja").
+	 * Uses strpos() because str_starts_with() is PHP 8 only and this plugin declares PHP 7.4.
+	 * サイトの表示言語が日本語（ロケールが ja で始まる）かを返す。
+	 * str_starts_with() は PHP 8 の関数で、宣言している PHP 7.4 では使えないため strpos() を使う。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return bool True when the locale starts with "ja" (ja, ja_JP, ...).
+	 */
+	function ormm_is_japanese_site() {
+		return 0 === strpos( (string) get_locale(), 'ja' );
+	}
+}
+
+if ( ! function_exists( 'ormm_should_show_ja_promotion' ) ) {
+	/**
+	 * Tells whether the notices about the paid version may be shown on this site.
+	 * They are shown only on Japanese sites, and never when ormm_show_pro_promotion returns false.
+	 * 有料版の案内をこのサイトで出してよいかを返す。
+	 * 日本語のサイトだけで出し、ormm_show_pro_promotion が false を返したときは出さない。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return bool True to show the notices.
+	 */
+	function ormm_should_show_ja_promotion() {
+		return ormm_is_japanese_site() && ormm_should_show_pro_promotion();
+	}
+}
+
+if ( ! function_exists( 'ormm_get_pro_promotion_url' ) ) {
+	/**
+	 * Returns the URL of the paid version's page, with UTM parameters. Not escaped: pass it through esc_url() on output.
+	 * The base URL is a placeholder kept in this one constant (not a filter, so it adds nothing to the frozen API).
+	 * 有料版のページの URL に UTM を付けて返す。エスケープはしないので、出力時に esc_url() を通すこと。
+	 * 元の URL は仮置きで、この 1 か所の定数に持つ（フィルターにしない。凍結する API を増やさないため）。
+	 *
+	 * @since 1.1.0
+	 * @access private Internal helper. Not part of the public API.
+	 *
+	 * @param string $content Where the link is shown: "plugin-row" or "template-list". Used as utm_content.
+	 * @return string URL with UTM parameters.
+	 */
+	function ormm_get_pro_promotion_url( $content ) {
+		// TODO: Placeholder. Replace with the sales page URL once it is decided (parent issue #12, answer B-1).
+		// 仮置き。販売ページの URL が決まったら差し替える（親 issue #12 の回答 B-1）.
+		$base_url = 'https://etbs.jp/product-category/wordpress-tools/';
+
+		return add_query_arg(
+			array(
+				'utm_source'   => 'etbs-order-note-templates',
+				'utm_medium'   => 'plugin',
+				'utm_campaign' => 'ordermemo-pro',
+				'utm_content'  => $content,
+			),
+			$base_url
+		);
+	}
+}
+
 /*-------------------------------------------*/
 /* テンプレート編集画面のメタボックス
 /*-------------------------------------------*/
@@ -576,11 +638,77 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 		if ( plugin_basename( ETBS_ONT_PLUGIN_FILE ) !== $file ) {
 			return $links;
 		}
-		$links[] = '<a href="https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">'
+		// Japanese sites also get the link to the paid version, before the support link.
+		// 日本語のサイトでは、支援リンクの前に有料版へのリンクも出す.
+		if ( ormm_should_show_ja_promotion() ) {
+			$links[] = '<a href="' . esc_url( ormm_get_pro_promotion_url( 'plugin-row' ) ) . '" target="_blank" rel="noopener noreferrer">'
+				. esc_html__( 'OrderMemo Pro (paid add-on)', 'etbs-order-note-templates' )
+				. ormm_get_new_tab_screen_reader_text() . '</a>';
+		}
+		$links[] = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
 			. esc_html__( 'Support development', 'etbs-order-note-templates' ) . '</a>';
 		return $links;
 	}
 	add_filter( 'plugin_row_meta', 'ormm_plugin_row_meta', 10, 2 );
+}
+
+if ( ! function_exists( 'ormm_get_new_tab_screen_reader_text' ) ) {
+	/**
+	 * Returns the hidden "(opens in a new tab)" text for links with target="_blank", as HTML.
+	 * target="_blank" のリンクに添える、視覚的に隠した「（新しいタブで開きます）」の文言を HTML で返す。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return string HTML of the screen-reader-only span.
+	 */
+	function ormm_get_new_tab_screen_reader_text() {
+		// Reuses the WordPress core string (default text domain), so it is already translated.
+		// WordPress 本体の文言（デフォルトのテキストドメイン）を使うので、翻訳済み.
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
+		return '<span class="screen-reader-text"> ' . esc_html__( '(opens in a new tab)' ) . '</span>';
+	}
+}
+
+/*-------------------------------------------*/
+/* Paid version notice (below the template list table, Japanese sites only)
+/* 有料版の案内（テンプレート一覧の表の下。日本語のサイトだけ）
+/*-------------------------------------------*/
+if ( ! function_exists( 'ormm_render_pro_promotion_below_list' ) ) {
+	/**
+	 * Prints one paragraph about the paid version below the template list table.
+	 * It is not an admin notice. It is skipped when there are no published templates, so that
+	 * the first thing a new user sees is the way to create the first template.
+	 * テンプレート一覧の表の下に、有料版の案内を 1 段落出す。
+	 * 管理画面の通知（admin_notices）ではない。公開済みのテンプレートが 0 件のときは出さない
+	 * （初めて開いた人に最初に見せるのは、最初のテンプレートを作る導線にするため）。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $which Position of the tablenav: "top" or "bottom".
+	 * @return void
+	 */
+	function ormm_render_pro_promotion_below_list( $which ) {
+		if ( 'bottom' !== $which || ! ormm_should_show_ja_promotion() || ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-ormm_template' !== $screen->id ) {
+			return;
+		}
+		// No published template yet: show nothing, the list itself points to creating the first one.
+		// 公開済みのテンプレートがまだ無い: 何も出さない（一覧自体が最初の 1 件を作る導線になる）.
+		$counts = wp_count_posts( 'ormm_template' );
+		if ( empty( $counts->publish ) ) {
+			return;
+		}
+		?>
+		<p class="description">
+			<?php echo esc_html__( 'More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers.', 'etbs-order-note-templates' ); ?>
+			<a href="<?php echo esc_url( ormm_get_pro_promotion_url( 'template-list' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__( 'Learn more about OrderMemo Pro', 'etbs-order-note-templates' ); ?><?php echo wp_kses( ormm_get_new_tab_screen_reader_text(), array( 'span' => array( 'class' => array() ) ) ); ?></a>
+		</p>
+		<?php
+	}
+	add_action( 'manage_posts_extra_tablenav', 'ormm_render_pro_promotion_below_list' );
 }
 
 /*-------------------------------------------*/
