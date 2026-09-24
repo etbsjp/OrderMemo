@@ -560,13 +560,99 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 }
 
 /*-------------------------------------------*/
-/* Support link (plugins list row)
-/* 支援リンク（プラグイン一覧行）
+/* Notice about the paid version (OrderMemo Pro): Japanese sites only
+/* 有料版（OrderMemo Pro）の案内：日本語サイトだけ
+/*-------------------------------------------*/
+if ( ! function_exists( 'ormm_is_japanese_site' ) ) {
+	/**
+	 * Tells whether the site language is Japanese (the locale starts with "ja").
+	 * サイトの表示言語が日本語（ロケールが ja で始まる）かを返す。
+	 *
+	 * strpos() is used on purpose: str_starts_with() is PHP 8 only, and this plugin declares PHP 7.4.
+	 * strpos() を使うのは意図的。str_starts_with() は PHP 8 の関数で、宣言している PHP 7.4 では使えない。
+	 *
+	 * @return bool True when the locale is ja, ja_JP, and so on.
+	 */
+	function ormm_is_japanese_site() {
+		return 0 === strpos( (string) get_locale(), 'ja' );
+	}
+}
+
+if ( ! function_exists( 'ormm_get_pro_promotion_url' ) ) {
+	/**
+	 * Builds the link to the OrderMemo Pro page, with UTM parameters. Private: not a public API.
+	 * OrderMemo Pro のページへのリンクを、UTM 付きで組み立てる。private：公開 API ではない。
+	 *
+	 * The base URL is a placeholder until the sales page is decided. It is kept in this one place,
+	 * and deliberately not exposed as a filter (a filter would be one more frozen contract).
+	 * 基の URL は販売ページが決まるまでの仮置き。ここ1か所だけに置き、フィルターにはしない
+	 * （フィルターにすると凍結する契約が増えるため）。
+	 *
+	 * @access private
+	 *
+	 * @param string $content Where the link is shown: 'plugin-row' or 'template-list'. Goes to utm_content.
+	 * @return string URL. Escape it with esc_url() on output. / 出力時に esc_url() を通すこと。
+	 */
+	function ormm_get_pro_promotion_url( $content ) {
+		// TODO: 販売ページの URL は未確定。決まったらこの1か所を差し替える.
+		$base_url = 'https://etbs.jp/product/ordermemo-pro/';
+
+		return add_query_arg(
+			array(
+				'utm_source'   => 'etbs-order-note-templates',
+				'utm_medium'   => 'plugin',
+				'utm_campaign' => 'ordermemo-pro',
+				'utm_content'  => $content,
+			),
+			$base_url
+		);
+	}
+}
+
+if ( ! function_exists( 'ormm_get_pro_promotion_link' ) ) {
+	/**
+	 * Builds an <a> element to the OrderMemo Pro page that opens in a new tab.
+	 * 新しいタブで開く、OrderMemo Pro のページへの <a> 要素を組み立てる。
+	 *
+	 * @access private
+	 *
+	 * @param string $text    Link text, already translated. / 翻訳済みのリンク文言。
+	 * @param string $content Where the link is shown (utm_content). / リンクを出す場所（utm_content）。
+	 * @return string HTML of the link, escaped. / エスケープ済みのリンクの HTML。
+	 */
+	function ormm_get_pro_promotion_link( $text, $content ) {
+		return sprintf(
+			'<a href="%1$s" target="_blank" rel="noopener noreferrer">%2$s<span class="screen-reader-text"> %3$s</span></a>',
+			esc_url( ormm_get_pro_promotion_url( $content ) ),
+			esc_html( $text ),
+			// Reuses WordPress core's translation. / WordPress 本体の翻訳を流用する.
+			esc_html__( '(opens in a new tab)' ) // phpcs:ignore WordPress.WP.I18n.MissingArgDomain
+		);
+	}
+}
+
+if ( ! function_exists( 'ormm_is_pro_promotion_visible' ) ) {
+	/**
+	 * Tells whether the notice about the paid version may be shown: a Japanese site, and not hidden by the filter.
+	 * 有料版の案内を出してよいかを返す：日本語サイトで、かつフィルターで隠されていない。
+	 *
+	 * @return bool True to show the notice.
+	 */
+	function ormm_is_pro_promotion_visible() {
+		return ormm_is_japanese_site() && ormm_should_show_pro_promotion();
+	}
+}
+
+/*-------------------------------------------*/
+/* Links in the plugins list row
+/* プラグイン一覧行のリンク
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 	/**
-	 * Adds the support links to this plugin's row in the plugins list.
-	 * プラグイン一覧の、このプラグインの行にサポート用のリンクを足す。
+	 * Adds the links to this plugin's row in the plugins list.
+	 * A link to OrderMemo Pro comes first, on Japanese sites only. "Support development" is always shown.
+	 * プラグイン一覧の、このプラグインの行にリンクを足す。
+	 * OrderMemo Pro へのリンクは日本語サイトにだけ、先頭に出す。「開発を支援」は常に出す。
 	 *
 	 * @param string[] $links Row meta links.
 	 * @param string   $file  Plugin basename of the row.
@@ -576,11 +662,54 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 		if ( plugin_basename( ETBS_ONT_PLUGIN_FILE ) !== $file ) {
 			return $links;
 		}
-		$links[] = '<a href="https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">'
+		if ( ormm_is_pro_promotion_visible() ) {
+			$links[] = ormm_get_pro_promotion_link( __( 'OrderMemo Pro (paid add-on)', 'etbs-order-note-templates' ), 'plugin-row' );
+		}
+		$links[] = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
 			. esc_html__( 'Support development', 'etbs-order-note-templates' ) . '</a>';
 		return $links;
 	}
 	add_filter( 'plugin_row_meta', 'ormm_plugin_row_meta', 10, 2 );
+}
+
+/*-------------------------------------------*/
+/* A paragraph under the template list
+/* テンプレート一覧の表の下の1段落
+/*-------------------------------------------*/
+if ( ! function_exists( 'ormm_render_pro_promotion_paragraph' ) ) {
+	/**
+	 * Prints one paragraph about OrderMemo Pro under the template list table.
+	 * Not shown when no template is published yet, so that the first thing a new user sees is the way to create one.
+	 * テンプレート一覧の表の下に、OrderMemo Pro の案内を1段落出す。
+	 * 公開済みのテンプレートが0件のときは出さない（初めて開いた人に最初に見せるのは、最初のテンプレートを作る導線）。
+	 *
+	 * @param string $which Position of the tablenav: 'top' or 'bottom'.
+	 * @return void
+	 */
+	function ormm_render_pro_promotion_paragraph( $which ) {
+		if ( 'bottom' !== $which || ! ormm_is_pro_promotion_visible() || ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-ormm_template' !== $screen->id ) {
+			return;
+		}
+		// wp_count_posts() is cached and needs no query per post. / wp_count_posts() はキャッシュされ、投稿ごとのクエリが要らない.
+		$counts = wp_count_posts( 'ormm_template' );
+		if ( empty( $counts->publish ) ) {
+			return;
+		}
+		?>
+		<p class="description">
+			<?php
+			esc_html_e( 'More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers.', 'etbs-order-note-templates' );
+			echo ' ';
+			echo wp_kses_post( ormm_get_pro_promotion_link( __( 'Learn more about OrderMemo Pro', 'etbs-order-note-templates' ), 'template-list' ) );
+			?>
+		</p>
+		<?php
+	}
+	add_action( 'manage_posts_extra_tablenav', 'ormm_render_pro_promotion_paragraph' );
 }
 
 /*-------------------------------------------*/

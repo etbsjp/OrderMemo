@@ -183,4 +183,6 @@ WP_TESTS_MULTISITE=1 …同じ形…   # マルチサイトでも1回走らせ�
 - `test-render-api.php` … 有料版が呼ぶ入口（`ormm_render_template` / `ormm_get_templates` /
   `ormm_tag_descriptions` / `ormm_show_pro_promotion`）。使い捨てサイトに WooCommerce が無いため、
   注文は代役の `WC_Order`（`tests/class-wc-order.php`。WooCommerce があるときは読まない）で渡している
+- `test-pro-promotion.php` … 日本語サイトだけに出す有料版の案内（判定関数・UTM 付き URL・プラグイン一覧の行・
+  テンプレート一覧の下の段落）。販売ページの URL は `ormm_get_pro_promotion_url()` 内の1か所に仮置き（未確定）
 - `test-plugin-header.php` … ヘッダ・readme.txt・定数・Text Domain の整合
