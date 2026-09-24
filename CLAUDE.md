@@ -180,4 +180,7 @@ WP_TESTS_MULTISITE=1 …同じ形…   # マルチサイトでも1回走らせ�
 ```
 
 - `test-legacy-guard.php` … 旧版検出・有効化拒否（`wp_die`、HTTP 409）・案内・削除警告
+- `test-render-api.php` … 有料版が呼ぶ入口（`ormm_render_template` / `ormm_get_templates` /
+  `ormm_tag_descriptions` / `ormm_show_pro_promotion`）。使い捨てサイトに WooCommerce が無いため、
+  注文は代役の `WC_Order`（`tests/class-wc-order.php`。WooCommerce があるときは読まない）で渡している
 - `test-plugin-header.php` … ヘッダ・readme.txt・定数・Text Domain の整合

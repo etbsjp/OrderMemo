@@ -91,6 +91,18 @@ if ( ! function_exists( 'ormm_register_post_type' ) ) {
 /* ormm_tags フィルターで独自タグを追加できる。
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_get_tags' ) ) {
+	/**
+	 * Returns the merge tags and their values for an order.
+	 * 注文に対する、差し込みタグと値の配列を返す。
+	 *
+	 * Part of the public API (frozen): OrderMemo Pro and other add-ons depend on it.
+	 * 公開 API（凍結）。有料版などの拡張が依存している。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param WC_Order $order The order the tags are resolved for.
+	 * @return string[] Values keyed by tag. The key is the tag itself, including the curly braces, such as "{order_number}".
+	 */
 	function ormm_get_tags( $order ) {
 		$date = $order->get_date_created();
 		$tags = [
@@ -102,7 +114,34 @@ if ( ! function_exists( 'ormm_get_tags' ) ) {
 			'{shipping_method}' => $order->get_shipping_method(),
 			'{site_name}'       => get_bloginfo( 'name' ),
 		];
-		return apply_filters( 'ormm_tags', $tags, $order );
+
+		/**
+		 * Filters the merge tags that are replaced in a template.
+		 * テンプレートの中で置き換える差し込みタグを絞り込む。
+		 *
+		 * Part of the public API (frozen). It runs every time a template is rendered.
+		 * Each key is the tag itself, including the curly braces (for example "{tracking_number}"),
+		 * and each value must be a scalar, which is used as a string.
+		 * A template is expanded with a single pass of strtr(), so a tag written inside a value
+		 * is NOT expanded again.
+		 * A companion plugin can tell that this plugin (not the older ordermemo plugin) is active
+		 * with function_exists( 'ormm_render_template' ).
+		 * 公開 API（凍結）。テンプレートを展開するたびに呼ばれる。キーは波括弧を含むタグそのもの
+		 * （例: "{tracking_number}"）、値はスカラーで、文字列として使われる。
+		 * 展開は strtr() の 1 回の走査なので、値の中に書かれたタグは再展開されない。
+		 * 有料版などは function_exists( 'ormm_render_template' ) で、この版か（旧版の ordermemo に
+		 * はこの関数が無い）を判別できる。
+		 *
+		 * @since 1.1.0
+		 *
+		 * @param string[] $tags  Values keyed by tag.
+		 * @param WC_Order $order The order the tags are resolved for.
+		 */
+		$tags = apply_filters( 'ormm_tags', $tags, $order );
+
+		// Guard against a filter that returns something other than an array, so every caller can foreach it.
+		// 配列以外を返すフィルターから、呼び出し側の foreach を守る.
+		return is_array( $tags ) ? $tags : array();
 	}
 }
 
@@ -111,10 +150,12 @@ if ( ! function_exists( 'ormm_get_tag_descriptions' ) ) {
 	 * Returns the description of each merge tag, keyed by tag.
 	 * 差し込みタグごとの説明を、タグをキーにして返す。
 	 *
+	 * @since 1.1.0
+	 *
 	 * @return string[] Descriptions keyed by tag, such as "{order_number}".
 	 */
 	function ormm_get_tag_descriptions() {
-		return [
+		$descriptions = array(
 			'{customer_name}'   => __( 'Billing name', 'etbs-order-note-templates' ),
 			'{order_number}'    => __( 'Order number', 'etbs-order-note-templates' ),
 			'{order_date}'      => __( 'Order date', 'etbs-order-note-templates' ),
@@ -122,7 +163,171 @@ if ( ! function_exists( 'ormm_get_tag_descriptions' ) ) {
 			'{payment_method}'  => __( 'Payment method', 'etbs-order-note-templates' ),
 			'{shipping_method}' => __( 'Shipping method', 'etbs-order-note-templates' ),
 			'{site_name}'       => __( 'Site title', 'etbs-order-note-templates' ),
-		];
+		);
+
+		/**
+		 * Filters the descriptions listed under "Available merge tags" on the template edit screen.
+		 * テンプレート編集画面の「利用できる差し込みタグ」欄に出す説明を絞り込む。
+		 *
+		 * Part of the public API (frozen). Use it together with the ormm_tags filter so a tag you
+		 * add is also explained. This only changes the list on screen; it does not add a tag.
+		 * 公開 API（凍結）。ormm_tags フィルターで足したタグを、この欄にも出すために使う。
+		 * 画面の一覧が変わるだけで、タグそのものは足されない。
+		 *
+		 * @since 1.1.0
+		 *
+		 * @param string[] $descriptions Descriptions keyed by tag, such as "{order_number}". Plain text; escaped when printed.
+		 */
+		$descriptions = apply_filters( 'ormm_tag_descriptions', $descriptions );
+
+		// Guard against a filter that returns something other than an array.
+		// 配列以外を返すフィルターから、呼び出し側の foreach を守る.
+		return is_array( $descriptions ) ? $descriptions : array();
+	}
+}
+
+/*-------------------------------------------*/
+/* テンプレートの取得と展開（有料版など外部から呼ばれる入口）
+/*-------------------------------------------*/
+if ( ! function_exists( 'ormm_get_templates' ) ) {
+	/**
+	 * Returns the published templates in display order.
+	 * 公開済みのテンプレートを、表示順で返す。
+	 *
+	 * Part of the public API (frozen). The order is menu_order, then title, ascending. Drafts,
+	 * trashed posts and other post types are never included.
+	 * 公開 API（凍結）。順序は menu_order、次にタイトルの昇順。下書き・ゴミ箱・他の投稿タイプは含まない。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return WP_Post[] Published templates. An empty array when there is none.
+	 */
+	function ormm_get_templates() {
+		return get_posts(
+			array(
+				'post_type'   => 'ormm_template',
+				'post_status' => 'publish',
+				'numberposts' => -1,
+				'orderby'     => array(
+					'menu_order' => 'ASC',
+					'title'      => 'ASC',
+				),
+			)
+		);
+	}
+}
+
+if ( ! function_exists( 'ormm_get_publishable_template' ) ) {
+	/**
+	 * Resolves a template ID or post to a published template.
+	 * テンプレートの ID または投稿を、公開済みのテンプレートとして解決する。
+	 *
+	 * Not part of the frozen contract: it is an internal helper and may change or go away.
+	 * Call ormm_render_template() instead.
+	 * 凍結対象外。内部の補助関数で、変更・削除されることがある。ormm_render_template() を使うこと。
+	 *
+	 * @internal
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param int|WP_Post $template Template post or its ID.
+	 * @return WP_Post|WP_Error The template, or a WP_Error with the code "ormm_template_not_found"
+	 *                          when it does not exist, is not published or is not an ormm_template.
+	 */
+	function ormm_get_publishable_template( $template ) {
+		// An ID of 0 (or null) would make get_post() read the global $post, so refuse it first.
+		// ID が 0（や null）だと get_post() がグローバルの $post を読むため、先に弾く.
+		if ( ! $template instanceof WP_Post && ! absint( $template ) ) {
+			return new WP_Error(
+				'ormm_template_not_found',
+				__( 'The template could not be found; it may have been deleted or unpublished.', 'etbs-order-note-templates' )
+			);
+		}
+		$post = get_post( $template );
+		if ( ! $post || 'ormm_template' !== $post->post_type || 'publish' !== $post->post_status ) {
+			return new WP_Error(
+				'ormm_template_not_found',
+				__( 'The template could not be found; it may have been deleted or unpublished.', 'etbs-order-note-templates' )
+			);
+		}
+		return $post;
+	}
+}
+
+if ( ! function_exists( 'ormm_render_template' ) ) {
+	/**
+	 * Returns a template body with the order's data filled in.
+	 * テンプレート本文を、注文のデータで展開した文字列を返す。
+	 *
+	 * Part of the public API (frozen). A companion plugin (OrderMemo Pro) can tell that this
+	 * plugin is active, and not the older ordermemo plugin, with function_exists( 'ormm_render_template' ).
+	 * The tags come from ormm_get_tags(), so tags added with the ormm_tags filter are expanded too.
+	 * The text is expanded with a single pass of strtr(); a tag written inside a tag value is not expanded again.
+	 * 公開 API（凍結）。有料版などは function_exists( 'ormm_render_template' ) で、この版であること
+	 * （旧版の ordermemo にはこの関数が無い）を判別できる。タグは ormm_get_tags() から取るので、
+	 * ormm_tags フィルターで足したタグも展開される。展開は strtr() の 1 回の走査で、
+	 * タグの値の中に書かれたタグは再展開されない。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param int|WP_Post $template Template post or its ID.
+	 * @param WC_Order    $order    The order whose data is filled in.
+	 * @return string|WP_Error The expanded text. A WP_Error with the code "ormm_template_not_found"
+	 *                         when the template does not exist, is not published (draft, trash and so on)
+	 *                         or is not an ormm_template; with the code "ormm_invalid_order" when
+	 *                         $order is not a WC_Order.
+	 */
+	function ormm_render_template( $template, $order ) {
+		// Refuse anything that is not a WC_Order, so a wrong argument is reported and not fatal.
+		// WC_Order 以外は、Fatal にせずエラーとして返す.
+		if ( ! $order instanceof WC_Order ) {
+			return new WP_Error(
+				'ormm_invalid_order',
+				'The order is not a valid WooCommerce order (WC_Order). This message is for developers and is not translated.'
+			);
+		}
+
+		$post = ormm_get_publishable_template( $template );
+		if ( is_wp_error( $post ) ) {
+			return $post;
+		}
+
+		// Keep only usable pairs: strtr() needs string values and does not accept empty keys.
+		// strtr() が扱えるペアだけ残す（値は文字列、キーは空でないこと）.
+		$replacements = array();
+		foreach ( ormm_get_tags( $order ) as $tag => $value ) {
+			if ( '' === (string) $tag || ! is_scalar( $value ) ) {
+				continue;
+			}
+			$replacements[ (string) $tag ] = (string) $value;
+		}
+
+		return strtr( $post->post_content, $replacements );
+	}
+}
+
+if ( ! function_exists( 'ormm_should_show_pro_promotion' ) ) {
+	/**
+	 * Tells whether this plugin may show its notice about the paid version.
+	 * 公式版が有料版の案内を出してよいかを返す。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return bool True to show the notice. Filtered with ormm_show_pro_promotion.
+	 */
+	function ormm_should_show_pro_promotion() {
+		/**
+		 * Filters whether this plugin shows its notice about the paid version (OrderMemo Pro).
+		 * 公式版が有料版（OrderMemo Pro）の案内を出すかを絞り込む。
+		 *
+		 * Part of the public API (frozen). OrderMemo Pro returns false to hide the notice.
+		 * 公開 API（凍結）。有料版が false を返して、案内を隠す。
+		 *
+		 * @since 1.1.0
+		 *
+		 * @param bool $show Whether to show the notice. Default true.
+		 */
+		return (bool) apply_filters( 'ormm_show_pro_promotion', true );
 	}
 }
 
@@ -274,12 +479,7 @@ if ( ! function_exists( 'ormm_enqueue_order_script' ) ) {
 		if ( ! $order_id || ! function_exists( 'wc_get_order' ) ) { return; }
 		if ( ! current_user_can( 'edit_shop_orders' ) ) { return; }
 
-		$templates = get_posts( [
-			'post_type'   => 'ormm_template',
-			'post_status' => 'publish',
-			'numberposts' => -1,
-			'orderby'     => [ 'menu_order' => 'ASC', 'title' => 'ASC' ],
-		] );
+		$templates = ormm_get_templates();
 		if ( ! $templates ) { return; }
 
 		$list = [];
@@ -338,9 +538,11 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 		$template_id = (int) ( $_POST['template_id'] ?? 0 );
 		$order_id    = (int) ( $_POST['order_id'] ?? 0 );
 
-		$template = get_post( $template_id );
-		if ( ! $template || 'ormm_template' !== $template->post_type || 'publish' !== $template->post_status ) {
-			wp_send_json_error( array( 'message' => __( 'The template could not be found; it may have been deleted or unpublished.', 'etbs-order-note-templates' ) . ' ' . __( 'Reload the page and try again.', 'etbs-order-note-templates' ) ) );
+		// The template is checked before the order, as before, so the messages stay the same.
+		// 従来どおりテンプレート、注文の順に確かめる（メッセージを変えないため）.
+		$template = ormm_get_publishable_template( $template_id );
+		if ( is_wp_error( $template ) ) {
+			wp_send_json_error( array( 'message' => $template->get_error_message() . ' ' . __( 'Reload the page and try again.', 'etbs-order-note-templates' ) ) );
 		}
 
 		$order = wc_get_order( $order_id );
@@ -348,7 +550,10 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 			wp_send_json_error( array( 'message' => __( 'The order could not be found; it may have been deleted.', 'etbs-order-note-templates' ) . ' ' . __( 'Reload the page and try again.', 'etbs-order-note-templates' ) ) );
 		}
 
-		$text = strtr( $template->post_content, ormm_get_tags( $order ) );
+		$text = ormm_render_template( $template, $order );
+		if ( is_wp_error( $text ) ) {
+			wp_send_json_error( array( 'message' => $text->get_error_message() . ' ' . __( 'Reload the page and try again.', 'etbs-order-note-templates' ) ) );
+		}
 		wp_send_json_success( array( 'text' => $text ) );
 	}
 	add_action( 'wp_ajax_ormm_render_template', 'ormm_ajax_render_template' );
