@@ -300,6 +300,30 @@ class Test_Etbs_Ont_Render_Api extends WP_UnitTestCase {
 	}
 
 	/**
+	 * A filter that returns a non-array from ormm_tags must not raise a warning; no tag is expanded.
+	 * ormm_tags が配列以外を返しても Warning を出さず、タグは展開されない。
+	 *
+	 * @return void
+	 */
+	public function test_ormm_tags_non_array_filter() {
+		$order = $this->create_order();
+		$id    = $this->create_template( array( 'post_content' => '#{order_number}' ) );
+
+		foreach ( array( null, 'text', false ) as $bad_value ) {
+			remove_all_filters( 'ormm_tags' );
+			add_filter(
+				'ormm_tags',
+				function () use ( $bad_value ) {
+					return $bad_value;
+				}
+			);
+
+			$this->assertSame( array(), ormm_get_tags( $order ), '配列でない戻り値は空配列として扱われる' );
+			$this->assertSame( '#{order_number}', ormm_render_template( $id, $order ), '配列でない戻り値でも Warning を出さず、タグは展開されない' );
+		}
+	}
+
+	/**
 	 * ormm_should_show_pro_promotion(): true by default, and follows the filter.
 	 * ormm_should_show_pro_promotion()：既定は true で、フィルターに従う。
 	 *

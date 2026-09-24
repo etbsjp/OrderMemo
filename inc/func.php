@@ -137,7 +137,11 @@ if ( ! function_exists( 'ormm_get_tags' ) ) {
 		 * @param string[] $tags  Values keyed by tag.
 		 * @param WC_Order $order The order the tags are resolved for.
 		 */
-		return apply_filters( 'ormm_tags', $tags, $order );
+		$tags = apply_filters( 'ormm_tags', $tags, $order );
+
+		// Guard against a filter that returns something other than an array, so every caller can foreach it.
+		// 配列以外を返すフィルターから、呼び出し側の foreach を守る.
+		return is_array( $tags ) ? $tags : array();
 	}
 }
 
