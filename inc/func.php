@@ -174,7 +174,11 @@ if ( ! function_exists( 'ormm_get_tag_descriptions' ) ) {
 		 *
 		 * @param string[] $descriptions Descriptions keyed by tag, such as "{order_number}". Plain text; escaped when printed.
 		 */
-		return apply_filters( 'ormm_tag_descriptions', $descriptions );
+		$descriptions = apply_filters( 'ormm_tag_descriptions', $descriptions );
+
+		// Guard against a filter that returns something other than an array.
+		// 配列以外を返すフィルターから、呼び出し側の foreach を守る.
+		return is_array( $descriptions ) ? $descriptions : array();
 	}
 }
 
@@ -209,6 +213,12 @@ if ( ! function_exists( 'ormm_get_publishable_template' ) ) {
 	 * Resolves a template ID or post to a published template.
 	 * テンプレートの ID または投稿を、公開済みのテンプレートとして解決する。
 	 *
+	 * Not part of the frozen contract: it is an internal helper and may change or go away.
+	 * Call ormm_render_template() instead.
+	 * 凍結対象外。内部の補助関数で、変更・削除されることがある。ormm_render_template() を使うこと。
+	 *
+	 * @internal
+	 *
 	 * @since 1.1.0
 	 *
 	 * @param int|WP_Post $template Template post or its ID.
@@ -216,6 +226,14 @@ if ( ! function_exists( 'ormm_get_publishable_template' ) ) {
 	 *                          when it does not exist, is not published or is not an ormm_template.
 	 */
 	function ormm_get_publishable_template( $template ) {
+		// An ID of 0 (or null) would make get_post() read the global $post, so refuse it first.
+		// ID が 0（や null）だと get_post() がグローバルの $post を読むため、先に弾く.
+		if ( ! $template instanceof WP_Post && ! absint( $template ) ) {
+			return new WP_Error(
+				'ormm_template_not_found',
+				__( 'The template could not be found; it may have been deleted or unpublished.', 'etbs-order-note-templates' )
+			);
+		}
 		$post = get_post( $template );
 		if ( ! $post || 'ormm_template' !== $post->post_type || 'publish' !== $post->post_status ) {
 			return new WP_Error(
@@ -245,11 +263,21 @@ if ( ! function_exists( 'ormm_render_template' ) ) {
 	 *
 	 * @param int|WP_Post $template Template post or its ID.
 	 * @param WC_Order    $order    The order whose data is filled in.
-	 * @return string|WP_Error The expanded text, or a WP_Error with the code "ormm_template_not_found"
+	 * @return string|WP_Error The expanded text. A WP_Error with the code "ormm_template_not_found"
 	 *                         when the template does not exist, is not published (draft, trash and so on)
-	 *                         or is not an ormm_template.
+	 *                         or is not an ormm_template; with the code "ormm_invalid_order" when
+	 *                         $order is not a WC_Order.
 	 */
 	function ormm_render_template( $template, $order ) {
+		// Refuse anything that is not a WC_Order, so a wrong argument is reported and not fatal.
+		// WC_Order 以外は、Fatal にせずエラーとして返す.
+		if ( ! $order instanceof WC_Order ) {
+			return new WP_Error(
+				'ormm_invalid_order',
+				'The order is not a valid WooCommerce order (WC_Order). This message is for developers and is not translated.'
+			);
+		}
+
 		$post = ormm_get_publishable_template( $template );
 		if ( is_wp_error( $post ) ) {
 			return $post;

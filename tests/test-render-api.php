@@ -6,6 +6,12 @@
  * @package etbs-order-note-templates
  */
 
+// Loads a stand-in for WC_Order only when WooCommerce is not loaded (the scratch test site has none).
+// WooCommerce が読み込まれていないときだけ、WC_Order の代役を読み込む（使い捨てのテストサイトには無い）.
+if ( ! class_exists( 'WC_Order' ) ) {
+	require_once __DIR__ . '/class-wc-order.php';
+}
+
 /**
  * Covers ormm_render_template(), ormm_get_templates(), ormm_get_tag_descriptions()
  * and ormm_should_show_pro_promotion().
@@ -55,67 +61,7 @@ class Test_Etbs_Ont_Render_Api extends WP_UnitTestCase {
 	 * @return object The stand-in order. / 注文の代役。
 	 */
 	private function create_order() {
-		return new class() {
-			/**
-			 * Creation date; none, so {order_date} is empty.
-			 * 作成日。無しにして、{order_date} を空にする。
-			 *
-			 * @return null
-			 */
-			public function get_date_created() {
-				return null;
-			}
-
-			/**
-			 * Billing name.
-			 * 請求先の氏名。
-			 *
-			 * @return string
-			 */
-			public function get_formatted_billing_full_name() {
-				return 'Test Customer';
-			}
-
-			/**
-			 * Order number.
-			 * 注文番号。
-			 *
-			 * @return string
-			 */
-			public function get_order_number() {
-				return '1001';
-			}
-
-			/**
-			 * Order total, as HTML.
-			 * 注文合計（HTML）。
-			 *
-			 * @return string
-			 */
-			public function get_formatted_order_total() {
-				return '&yen;1,000';
-			}
-
-			/**
-			 * Payment method title.
-			 * 支払方法名。
-			 *
-			 * @return string
-			 */
-			public function get_payment_method_title() {
-				return 'Bank transfer';
-			}
-
-			/**
-			 * Shipping method.
-			 * 配送方法。
-			 *
-			 * @return string
-			 */
-			public function get_shipping_method() {
-				return 'Flat rate';
-			}
-		};
+		return new WC_Order();
 	}
 
 	/**
@@ -126,8 +72,8 @@ class Test_Etbs_Ont_Render_Api extends WP_UnitTestCase {
 	 */
 	public function test_ormm_render_template() {
 		$order = $this->create_order();
-		$pm    = 'Bank transfer';
-		$num   = '1001';
+		$pm    = $order->get_payment_method_title();
+		$num   = (string) $order->get_order_number();
 
 		$published_id = $this->create_template( array( 'post_content' => '#{order_number} / {payment_method}' ) );
 		$draft_id     = $this->create_template(
@@ -239,6 +185,19 @@ class Test_Etbs_Ont_Render_Api extends WP_UnitTestCase {
 				'filter_tags'         => array(),
 				'expected'            => 'ormm_template_not_found',
 			),
+			array(
+				'test_condition_name' => 'ID が 0 のときは WP_Error（グローバルの投稿を読まない）',
+				'template'            => 0,
+				'filter_tags'         => array(),
+				'expected'            => 'ormm_template_not_found',
+			),
+			array(
+				'test_condition_name' => '注文が WC_Order でないときは WP_Error',
+				'template'            => $published_id,
+				'filter_tags'         => array(),
+				'order'               => new stdClass(),
+				'expected'            => 'ormm_invalid_order',
+			),
 		);
 
 		foreach ( $test_cases as $case ) {
@@ -249,7 +208,7 @@ class Test_Etbs_Ont_Render_Api extends WP_UnitTestCase {
 			};
 			add_filter( 'ormm_tags', $callback );
 
-			$actual = ormm_render_template( $case['template'], $order );
+			$actual = ormm_render_template( $case['template'], $case['order'] ?? $order );
 
 			remove_filter( 'ormm_tags', $callback );
 
@@ -332,6 +291,12 @@ class Test_Etbs_Ont_Render_Api extends WP_UnitTestCase {
 
 		$this->assertSame( 'Tracking number', $filtered['{tracking_number}'], 'フィルターで足した説明が返る' );
 		$this->assertSame( $default['{order_number}'], $filtered['{order_number}'], '標準の説明は残る' );
+
+		// A filter that returns a non-array must not break the edit screen.
+		// 配列でない値を返すフィルターでも、編集画面を壊さない.
+		remove_all_filters( 'ormm_tag_descriptions' );
+		add_filter( 'ormm_tag_descriptions', '__return_null' );
+		$this->assertSame( array(), ormm_get_tag_descriptions(), '配列でない戻り値は空配列として扱われる' );
 	}
 
 	/**
