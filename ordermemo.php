@@ -23,15 +23,3 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once( dirname( __FILE__ ) . '/inc/func.php' );
-
-/*-------------------------------------------*/
-/*  プラグインのアップデートチェック
-/*-------------------------------------------*/
-require 'inc/plugin-update-checker/plugin-update-checker.php';
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
-$myUpdateChecker = PucFactory::buildUpdateChecker(
-	'https://github.com/etbsjp/ordermemo/',
-	__FILE__,
-	'ordermemo'
-);
-$myUpdateChecker->setBranch( 'dist' );
