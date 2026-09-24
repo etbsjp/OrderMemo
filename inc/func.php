@@ -355,7 +355,8 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 }
 
 /*-------------------------------------------*/
-/* 寄付・開発依頼リンク（プラグイン一覧行）
+/* Support link (plugins list row)
+/* 支援リンク（プラグイン一覧行）
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 	/**
@@ -378,7 +379,8 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 }
 
 /*-------------------------------------------*/
-/* 寄付・開発依頼リンク（テンプレート一覧・編集画面のフッター）
+/* Support link (footer of the template list and edit screens)
+/* 支援リンク（テンプレート一覧・編集画面のフッター）
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_admin_footer_text' ) ) {
 	/**
