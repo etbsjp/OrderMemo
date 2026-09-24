@@ -366,9 +366,9 @@ if ( ! function_exists( 'ormm_should_show_ja_promotion' ) ) {
 if ( ! function_exists( 'ormm_get_pro_promotion_url' ) ) {
 	/**
 	 * Returns the URL of the paid version's page, with UTM parameters. Not escaped: pass it through esc_url() on output.
-	 * The base URL is a placeholder kept in this one constant (not a filter, so it adds nothing to the frozen API).
+	 * The base URL is the OrderMemo Pro product page on etbs.jp, kept in this one place (not a filter, so it adds nothing to the frozen API).
 	 * 有料版のページの URL に UTM を付けて返す。エスケープはしないので、出力時に esc_url() を通すこと。
-	 * 元の URL は仮置きで、この 1 か所の定数に持つ（フィルターにしない。凍結する API を増やさないため）。
+	 * 元の URL は etbs.jp の OrderMemo Pro 商品ページで、この 1 か所に持つ（フィルターにしない。凍結する API を増やさないため）。
 	 *
 	 * @since 1.1.0
 	 * @access private Internal helper. Not part of the public API.
@@ -377,9 +377,9 @@ if ( ! function_exists( 'ormm_get_pro_promotion_url' ) ) {
 	 * @return string URL with UTM parameters.
 	 */
 	function ormm_get_pro_promotion_url( $content ) {
-		// TODO: Placeholder. Replace with the sales page URL once it is decided (parent issue #12, answer B-1).
-		// 仮置き。販売ページの URL が決まったら差し替える（親 issue #12 の回答 B-1）.
-		$base_url = 'https://etbs.jp/product-category/wordpress-tools/';
+		// The OrderMemo Pro product page on etbs.jp.
+		// etbs.jp の OrderMemo Pro 商品ページ.
+		$base_url = 'https://etbs.jp/product/etbs-order-note-templates-pro/';
 
 		return add_query_arg(
 			array(
@@ -645,7 +645,7 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 				. esc_html__( 'OrderMemo Pro (paid add-on)', 'etbs-order-note-templates' )
 				. ormm_get_new_tab_screen_reader_text() . '</a>';
 		}
-		$links[] = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
+		$links[] = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=etbs-order-note-templates&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
 			. esc_html__( 'Support development', 'etbs-order-note-templates' )
 			. ormm_get_new_tab_screen_reader_text() . '</a>';
 		return $links;
@@ -789,7 +789,7 @@ if ( ! function_exists( 'ormm_admin_footer_text' ) ) {
 	function ormm_admin_footer_text( $text ) {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 		if ( ! $screen || 'ormm_template' !== $screen->post_type ) { return $text; }
-		$link = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
+		$link = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=etbs-order-note-templates&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
 			. esc_html__( 'consider supporting its development', 'etbs-order-note-templates' ) . '</a>';
 		return sprintf(
 			/* translators: %s: link to the donation page. The link text is "consider supporting its development". */

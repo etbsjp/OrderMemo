@@ -290,6 +290,9 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 
 			$this->assertCount( $case['expected_count'], $links, $case['test_condition_name'] );
 			$this->assertSame( $case['expected_pro'], 0 < substr_count( $html, 'utm_content=plugin-row' ), $case['test_condition_name'] . '（有料版リンク）' );
+			// 有料版・開発を支援のどちらのリンクも、utm_source は公式版のスラッグに揃える（旧版の ordermemo は使わない）.
+			$this->assertSame( $case['expected_count'], substr_count( $html, 'utm_source=etbs-order-note-templates' ), $case['test_condition_name'] . '（utm_source）' );
+			$this->assertSame( 0, substr_count( $html, 'utm_source=ordermemo' ), $case['test_condition_name'] . '（旧版の utm_source が残らない）' );
 			// 新しいタブで開くリンクには、すべて screen-reader-text が付く（有料版・開発を支援の両方）.
 			$this->assertSame( $case['expected_count'], substr_count( $html, 'screen-reader-text' ), $case['test_condition_name'] . '（新しいタブで開く旨）' );
 			// esc_url() が通っていれば、href に生の & は残らない.
@@ -579,6 +582,8 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 
 			if ( $case['expected'] ) {
 				$this->assertStringContainsString( 'etbs.jp/product/donate/', $actual, $case['test_condition_name'] . '（支援リンク）' );
+				// utm_source は公式版のスラッグに揃える（旧版の ordermemo は使わない）.
+				$this->assertStringContainsString( 'utm_source=etbs-order-note-templates', $actual, $case['test_condition_name'] . '（utm_source）' );
 				$this->assertStringNotContainsString( 'ordermemo-pro', $actual, $case['test_condition_name'] . '（有料版の宣伝を含まない）' );
 				$this->assertStringNotContainsString( 'utm_content', $actual, $case['test_condition_name'] . '（有料版リンクを含まない）' );
 			} else {

@@ -4,7 +4,7 @@ Donate link:       https://etbs.jp/product/donate/
 Tags:              woocommerce, order notes, templates, canned responses, shop manager
 Requires PHP:      7.4
 Tested up to:      7.1
-Stable tag:        1.0.4
+Stable tag:        1.1.0
 Requires Plugins:  woocommerce
 License:           GPLv2 or later
 License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -83,10 +83,10 @@ Only deactivate the old plugin. If you want to delete it, first update it to ver
 
 == Changelog ==
 
-= 1.0.4 =
+= 1.1.0 =
 * Initial release on WordPress.org.
 
 == Upgrade Notice ==
 
-= 1.0.4 =
+= 1.1.0 =
 Initial release on WordPress.org. If "ETBS OrderMemo" is active, deactivate it first.
