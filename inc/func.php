@@ -508,17 +508,30 @@ if ( ! function_exists( 'ormm_save_template' ) ) {
 /* 従来（post.php + shop_order）とHPOS（admin.php?page=wc-orders）の両対応。
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_get_current_order_id' ) ) {
+	/**
+	 * Returns the ID of the order being edited on the current admin screen, or 0 on any other screen.
+	 * The query string is only read to tell the screen apart (nothing is saved), so no nonce is checked.
+	 * 今開いている管理画面が注文編集画面なら、その注文 ID を返す。それ以外の画面では 0 を返す。
+	 * クエリ文字列は画面の判定に読むだけで何も保存しないため、nonce は確かめない。
+	 *
+	 * @param string $hook Hook suffix of the current admin page (from admin_enqueue_scripts).
+	 * @return int Order ID, or 0 when the screen is not an order edit screen.
+	 */
 	function ormm_get_current_order_id( $hook ) {
 		if ( 'post.php' === $hook ) {
-			$post_id = (int) ( $_GET['post'] ?? 0 );
+			// Legacy order storage: post.php?post=<ID> of the shop_order post type.
+			// 従来の保存方式：shop_order 投稿の post.php?post=<ID>.
+			$post_id = isset( $_GET['post'] ) ? (int) $_GET['post'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only screen detection.
 			if ( $post_id && 'shop_order' === get_post_type( $post_id ) ) {
 				return $post_id;
 			}
 		}
 		if ( 'woocommerce_page_wc-orders' === $hook ) {
-			$action = sanitize_text_field( wp_unslash( $_GET['action'] ?? '' ) );
+			// HPOS: admin.php?page=wc-orders&action=edit&id=<ID>.
+			// HPOS：admin.php?page=wc-orders&action=edit&id=<ID>.
+			$action = isset( $_GET['action'] ) ? sanitize_text_field( wp_unslash( $_GET['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only screen detection.
 			if ( 'edit' === $action ) {
-				return (int) ( $_GET['id'] ?? 0 );
+				return isset( $_GET['id'] ) ? (int) $_GET['id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only screen detection.
 			}
 		}
 		return 0;
@@ -597,8 +610,10 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 			wp_send_json_error( array( 'message' => __( 'WooCommerce is not active.', 'etbs-order-note-templates' ) . ' ' . __( 'Activate WooCommerce and try again.', 'etbs-order-note-templates' ) ) );
 		}
 
-		$template_id = (int) ( $_POST['template_id'] ?? 0 );
-		$order_id    = (int) ( $_POST['order_id'] ?? 0 );
+		// The nonce was checked above with check_ajax_referer(). The IDs are cast to integers.
+		// nonce は上の check_ajax_referer() で確かめ済み。ID は整数に型変換する.
+		$template_id = isset( $_POST['template_id'] ) ? (int) $_POST['template_id'] : 0;
+		$order_id    = isset( $_POST['order_id'] ) ? (int) $_POST['order_id'] : 0;
 
 		// The template is checked before the order, as before, so the messages stay the same.
 		// 従来どおりテンプレート、注文の順に確かめる（メッセージを変えないため）.

@@ -221,6 +221,7 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 			// phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url
 			parse_str( (string) wp_parse_url( $url, PHP_URL_QUERY ), $query );
 
+			$this->assertStringStartsWith( 'https://etbs.jp/product/etbs-order-note-templates-pro/?', $url, $case['test_condition_name'] . '（有料版の商品ページ）' );
 			$this->assertSame( $case['expected'], $query['utm_content'], $case['test_condition_name'] );
 			$this->assertSame( 'etbs-order-note-templates', $query['utm_source'], $case['test_condition_name'] . '（utm_source）' );
 			$this->assertSame( 'plugin', $query['utm_medium'], $case['test_condition_name'] . '（utm_medium）' );
