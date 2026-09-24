@@ -268,3 +268,15 @@ msgstr ""
 #: inc/legacy-guard.php:366
 msgid "The old plugin keeps working in the meantime."
 msgstr ""
+
+#: inc/func.php
+msgid "OrderMemo Pro (paid add-on)"
+msgstr ""
+
+#: inc/func.php
+msgid "More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers."
+msgstr ""
+
+#: inc/func.php
+msgid "Learn more about OrderMemo Pro"
+msgstr ""

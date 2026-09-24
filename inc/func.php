@@ -331,6 +331,68 @@ if ( ! function_exists( 'ormm_should_show_pro_promotion' ) ) {
 	}
 }
 
+if ( ! function_exists( 'ormm_is_japanese_site' ) ) {
+	/**
+	 * Tells whether the site's display language is Japanese (the locale starts with "ja").
+	 * Uses strpos() because str_starts_with() is PHP 8 only and this plugin declares PHP 7.4.
+	 * サイトの表示言語が日本語（ロケールが ja で始まる）かを返す。
+	 * str_starts_with() は PHP 8 の関数で、宣言している PHP 7.4 では使えないため strpos() を使う。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return bool True when the locale starts with "ja" (ja, ja_JP, ...).
+	 */
+	function ormm_is_japanese_site() {
+		return 0 === strpos( (string) get_locale(), 'ja' );
+	}
+}
+
+if ( ! function_exists( 'ormm_should_show_ja_promotion' ) ) {
+	/**
+	 * Tells whether the notices about the paid version may be shown on this site.
+	 * They are shown only on Japanese sites, and never when ormm_show_pro_promotion returns false.
+	 * 有料版の案内をこのサイトで出してよいかを返す。
+	 * 日本語のサイトだけで出し、ormm_show_pro_promotion が false を返したときは出さない。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return bool True to show the notices.
+	 */
+	function ormm_should_show_ja_promotion() {
+		return ormm_is_japanese_site() && ormm_should_show_pro_promotion();
+	}
+}
+
+if ( ! function_exists( 'ormm_get_pro_promotion_url' ) ) {
+	/**
+	 * Returns the URL of the paid version's page, with UTM parameters. Not escaped: pass it through esc_url() on output.
+	 * The base URL is a placeholder kept in this one constant (not a filter, so it adds nothing to the frozen API).
+	 * 有料版のページの URL に UTM を付けて返す。エスケープはしないので、出力時に esc_url() を通すこと。
+	 * 元の URL は仮置きで、この 1 か所の定数に持つ（フィルターにしない。凍結する API を増やさないため）。
+	 *
+	 * @since 1.1.0
+	 * @access private Internal helper. Not part of the public API.
+	 *
+	 * @param string $content Where the link is shown: "plugin-row" or "template-list". Used as utm_content.
+	 * @return string URL with UTM parameters.
+	 */
+	function ormm_get_pro_promotion_url( $content ) {
+		// TODO: Placeholder. Replace with the sales page URL once it is decided (parent issue #12, answer B-1).
+		// 仮置き。販売ページの URL が決まったら差し替える（親 issue #12 の回答 B-1）.
+		$base_url = 'https://etbs.jp/product-category/wordpress-tools/';
+
+		return add_query_arg(
+			array(
+				'utm_source'   => 'etbs-order-note-templates',
+				'utm_medium'   => 'plugin',
+				'utm_campaign' => 'ordermemo-pro',
+				'utm_content'  => $content,
+			),
+			$base_url
+		);
+	}
+}
+
 /*-------------------------------------------*/
 /* テンプレート編集画面のメタボックス
 /*-------------------------------------------*/
@@ -576,11 +638,140 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 		if ( plugin_basename( ETBS_ONT_PLUGIN_FILE ) !== $file ) {
 			return $links;
 		}
-		$links[] = '<a href="https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">'
-			. esc_html__( 'Support development', 'etbs-order-note-templates' ) . '</a>';
+		// Japanese sites also get the link to the paid version, before the support link.
+		// 日本語のサイトでは、支援リンクの前に有料版へのリンクも出す.
+		if ( ormm_should_show_ja_promotion() ) {
+			$links[] = '<a href="' . esc_url( ormm_get_pro_promotion_url( 'plugin-row' ) ) . '" target="_blank" rel="noopener noreferrer">'
+				. esc_html__( 'OrderMemo Pro (paid add-on)', 'etbs-order-note-templates' )
+				. ormm_get_new_tab_screen_reader_text() . '</a>';
+		}
+		$links[] = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
+			. esc_html__( 'Support development', 'etbs-order-note-templates' )
+			. ormm_get_new_tab_screen_reader_text() . '</a>';
 		return $links;
 	}
 	add_filter( 'plugin_row_meta', 'ormm_plugin_row_meta', 10, 2 );
+}
+
+if ( ! function_exists( 'ormm_get_new_tab_screen_reader_text' ) ) {
+	/**
+	 * Returns the hidden "(opens in a new tab)" text for links with target="_blank", as HTML.
+	 * target="_blank" のリンクに添える、視覚的に隠した「（新しいタブで開きます）」の文言を HTML で返す。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return string HTML of the screen-reader-only span.
+	 */
+	function ormm_get_new_tab_screen_reader_text() {
+		// Reuses the WordPress core string (default text domain), so it is already translated.
+		// WordPress 本体の文言（デフォルトのテキストドメイン）を使うので、翻訳済み.
+		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
+		return '<span class="screen-reader-text"> ' . esc_html__( '(opens in a new tab)' ) . '</span>';
+	}
+}
+
+/*-------------------------------------------*/
+/* Paid version notice (below the template list table, Japanese sites only)
+/* 有料版の案内（テンプレート一覧の表の下。日本語のサイトだけ）
+/*-------------------------------------------*/
+if ( ! function_exists( 'ormm_can_show_pro_promotion_below_list' ) ) {
+	/**
+	 * Tells whether the paid version paragraph may be shown on the current screen.
+	 * Requires: a Japanese site, the template list screen, activate_plugins, at least one published
+	 * template, and not the trash view. The bottom tablenav is not printed at all when the list shows
+	 * no rows (empty search result, empty filter), so those cases need no check of their own.
+	 * 有料版の段落を、いまの画面で出してよいかを返す。
+	 * 条件は、日本語のサイト・テンプレート一覧画面・activate_plugins・公開済みテンプレートが 1 件以上・
+	 * ゴミ箱ビューでないこと。一覧の行が 0 件（検索結果なし・絞り込みで 0 件）のときは、本体が
+	 * 下側の tablenav ごと出さないため、その場合の判定はここでは要らない。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return bool True to show the paragraph.
+	 */
+	function ormm_can_show_pro_promotion_below_list() {
+		if ( ! ormm_should_show_ja_promotion() || ! current_user_can( 'activate_plugins' ) ) {
+			return false;
+		}
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-ormm_template' !== $screen->id ) {
+			return false;
+		}
+		// The trash view lists templates that are on their way out: do not advertise there.
+		// ゴミ箱ビューは削除予定のテンプレートを並べる画面なので、案内は出さない.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view switch, nothing is changed.
+		$post_status = isset( $_GET['post_status'] ) ? sanitize_key( wp_unslash( $_GET['post_status'] ) ) : '';
+		if ( 'trash' === $post_status ) {
+			return false;
+		}
+		// No published template yet: show nothing, the list itself points to creating the first one.
+		// 公開済みのテンプレートがまだ無い: 何も出さない（一覧自体が最初の 1 件を作る導線になる）.
+		$counts = wp_count_posts( 'ormm_template' );
+		return ! empty( $counts->publish );
+	}
+}
+
+if ( ! function_exists( 'ormm_render_pro_promotion_below_list' ) ) {
+	/**
+	 * Prints one paragraph about the paid version below the template list table.
+	 * It is not an admin notice. See ormm_can_show_pro_promotion_below_list() for when it is skipped.
+	 * The core calls this hook right after the "actions" div, so the markup lands directly in
+	 * div.tablenav.bottom. The wrapper div (cleared by ormm_add_pro_promotion_style()) keeps it below
+	 * the pagination instead of overlapping it.
+	 * テンプレート一覧の表の下に、有料版の案内を 1 段落出す。
+	 * 管理画面の通知（admin_notices）ではない。出さない条件は ormm_can_show_pro_promotion_below_list() を参照。
+	 * 本体はこのフックを "actions" の div の直後で呼ぶため、出力は div.tablenav.bottom の直下に入る。
+	 * 包んだ div（ormm_add_pro_promotion_style() で clear する）で、ページ送りと重ならず下に回す。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @param string $which Position of the tablenav: "top" or "bottom".
+	 * @return void
+	 */
+	function ormm_render_pro_promotion_below_list( $which ) {
+		if ( 'bottom' !== $which || ! ormm_can_show_pro_promotion_below_list() ) {
+			return;
+		}
+		?>
+		<div class="ormm-pro-promotion">
+			<p class="description">
+				<?php echo esc_html__( 'More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers.', 'etbs-order-note-templates' ); ?>
+				<a href="<?php echo esc_url( ormm_get_pro_promotion_url( 'template-list' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__( 'Learn more about OrderMemo Pro', 'etbs-order-note-templates' ); ?><?php echo wp_kses( ormm_get_new_tab_screen_reader_text(), array( 'span' => array( 'class' => array() ) ) ); ?></a>
+			</p>
+		</div>
+		<?php
+	}
+	add_action( 'manage_posts_extra_tablenav', 'ormm_render_pro_promotion_below_list' );
+}
+
+if ( ! function_exists( 'ormm_add_pro_promotion_style' ) ) {
+	/**
+	 * Adds the small stylesheet the paragraph needs, only on the screen where the paragraph is shown.
+	 * The core gives .tablenav a fixed height of 32px and floats the pagination to the right, so a
+	 * paragraph that wraps would overflow and overlap. Also cancels the synthesized italic, which
+	 * Japanese text gets from the browser.
+	 * 段落に必要な最小限の CSS を、段落を出す画面にだけ足す。
+	 * 本体は .tablenav の高さを 32px に固定し、ページ送りを右に float させるため、折り返す段落は
+	 * あふれて重なる。日本語がブラウザによって擬似斜体にされるのも打ち消す。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return void
+	 */
+	function ormm_add_pro_promotion_style() {
+		if ( ! ormm_can_show_pro_promotion_below_list() ) {
+			return;
+		}
+		// The "common" handle is loaded on every admin screen, so the CSS needs no file of its own.
+		// "common" は管理画面のすべてで読み込まれるため、専用のファイルは要らない.
+		wp_add_inline_style(
+			'common',
+			'.tablenav.bottom{height:auto}'
+			. '.ormm-pro-promotion{clear:both}'
+			. '.ormm-pro-promotion .description{font-style:normal}'
+		);
+	}
+	add_action( 'admin_enqueue_scripts', 'ormm_add_pro_promotion_style' );
 }
 
 /*-------------------------------------------*/
