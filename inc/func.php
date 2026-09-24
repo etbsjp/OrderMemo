@@ -277,48 +277,6 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 }
 
 /*-------------------------------------------*/
-/* ダッシュボードウィジェット（使い方・サポート案内）
-/*-------------------------------------------*/
-if ( ! function_exists( 'ormm_add_dashboard_widget' ) ) {
-	function ormm_add_dashboard_widget() {
-		if ( ! current_user_can( 'edit_shop_orders' ) ) { return; }
-		wp_add_dashboard_widget(
-			'ormm_dashboard_widget',
-			'ETBS OrderMemo',
-			'ormm_render_dashboard_widget'
-		);
-	}
-	add_action( 'wp_dashboard_setup', 'ormm_add_dashboard_widget' );
-}
-
-if ( ! function_exists( 'ormm_render_dashboard_widget' ) ) {
-	function ormm_render_dashboard_widget() {
-		$list_url = admin_url( 'edit.php?post_type=ormm_template' );
-		?>
-		<p>WooCommerceの注文編集画面で、登録済みテンプレートから定型文を「注文メモ」にワンクリックで挿入できます。</p>
-
-		<strong>使い方</strong>
-		<ul style="margin:6px 0 12px 1.2em;list-style:disc;">
-			<li><strong>WooCommerce &gt; メモテンプレート</strong>でテンプレートを登録します。</li>
-			<li>注文編集画面の「メモを追加」欄の上に表示されるセレクトから選んで「挿入」をクリックします。</li>
-			<li>本文には差し込みタグが使えます：<code>{customer_name}</code> <code>{order_number}</code> など（挿入時にその注文のデータへ展開されます）。</li>
-		</ul>
-
-		<strong>注意事項</strong>
-		<ul style="margin:6px 0 12px 1.2em;list-style:disc;">
-			<li>「顧客へのメモ」はそのままメール送信されます。挿入後に文面を確認してから「追加」をクリックしてください。</li>
-			<li>テンプレート本文はプレーンテキストとして保存されます（HTMLタグは保存時に除去されます）。</li>
-		</ul>
-
-		<strong>サポート</strong>
-		<p style="margin:6px 0 12px;">有償サポートやカスタマイズは<a href="https://etbs.jp/product-category/wordpress-tools/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener">こちらのページ</a>からお問い合わせください。開発の継続は<a href="https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener">ご支援</a>で応援いただけます。</p>
-
-		<a href="<?php echo esc_url( $list_url ); ?>" class="button button-primary">メモテンプレート一覧を開く</a>
-		<?php
-	}
-}
-
-/*-------------------------------------------*/
 /* 寄付・開発依頼リンク（プラグイン一覧行）
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
