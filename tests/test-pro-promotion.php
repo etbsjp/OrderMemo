@@ -305,6 +305,8 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 				'published'           => 1,
 				'filter_value'        => null,
 				'expected'            => false,
+				// CSS は画面単位で1回掛かるもので which には依存しない（セレクタが .tablenav.bottom 限定なので上部には効かない）.
+				'expected_css'        => true,
 			),
 			array(
 				'test_condition_name' => '別の投稿タイプの一覧には出さない',
@@ -385,10 +387,11 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 			$html     = $this->get_paragraph( $case['which'] );
 			$is_shown = '' !== trim( $html );
 			$this->assertSame( $case['expected'], $is_shown, $case['test_condition_name'] );
-			// 表のフッターの崩れを防ぐ CSS は、案内を出すときだけ出る（条件外では一切出ない）.
-			$css = $this->get_inline_css();
-			$this->assertSame( $case['expected'], '' !== $css, $case['test_condition_name'] . '（CSS の有無は案内の有無と一致）' );
-			if ( $case['expected'] ) {
+			// 表のフッターの崩れを防ぐ CSS は、which を見ず、言語・権限・画面・件数・フィルターだけで出し分ける（条件外では一切出ない）.
+			$expected_css = array_key_exists( 'expected_css', $case ) ? $case['expected_css'] : $case['expected'];
+			$css          = $this->get_inline_css();
+			$this->assertSame( $expected_css, '' !== $css, $case['test_condition_name'] . '（CSS の有無）' );
+			if ( $expected_css ) {
 				$this->assertStringContainsString( 'height:auto', $css, $case['test_condition_name'] . '（.tablenav.bottom の固定高を解く）' );
 				$this->assertStringContainsString( '.tablenav.bottom .ormm-pro-promotion', $css, $case['test_condition_name'] . '（段落を全幅の下段に置く）' );
 			}
