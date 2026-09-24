@@ -155,7 +155,7 @@ if ( ! function_exists( 'ormm_get_tag_descriptions' ) ) {
 	 * @return string[] Descriptions keyed by tag, such as "{order_number}".
 	 */
 	function ormm_get_tag_descriptions() {
-		$descriptions = [
+		$descriptions = array(
 			'{customer_name}'   => __( 'Billing name', 'etbs-order-note-templates' ),
 			'{order_number}'    => __( 'Order number', 'etbs-order-note-templates' ),
 			'{order_date}'      => __( 'Order date', 'etbs-order-note-templates' ),
@@ -163,7 +163,7 @@ if ( ! function_exists( 'ormm_get_tag_descriptions' ) ) {
 			'{payment_method}'  => __( 'Payment method', 'etbs-order-note-templates' ),
 			'{shipping_method}' => __( 'Shipping method', 'etbs-order-note-templates' ),
 			'{site_name}'       => __( 'Site title', 'etbs-order-note-templates' ),
-		];
+		);
 
 		/**
 		 * Filters the descriptions listed under "Available merge tags" on the template edit screen.
@@ -203,12 +203,17 @@ if ( ! function_exists( 'ormm_get_templates' ) ) {
 	 * @return WP_Post[] Published templates. An empty array when there is none.
 	 */
 	function ormm_get_templates() {
-		return get_posts( [
-			'post_type'   => 'ormm_template',
-			'post_status' => 'publish',
-			'numberposts' => -1,
-			'orderby'     => [ 'menu_order' => 'ASC', 'title' => 'ASC' ],
-		] );
+		return get_posts(
+			array(
+				'post_type'   => 'ormm_template',
+				'post_status' => 'publish',
+				'numberposts' => -1,
+				'orderby'     => array(
+					'menu_order' => 'ASC',
+					'title'      => 'ASC',
+				),
+			)
+		);
 	}
 }
 
@@ -289,7 +294,7 @@ if ( ! function_exists( 'ormm_render_template' ) ) {
 
 		// Keep only usable pairs: strtr() needs string values and does not accept empty keys.
 		// strtr() が扱えるペアだけ残す（値は文字列、キーは空でないこと）.
-		$replacements = [];
+		$replacements = array();
 		foreach ( ormm_get_tags( $order ) as $tag => $value ) {
 			if ( '' === (string) $tag || ! is_scalar( $value ) ) {
 				continue;
