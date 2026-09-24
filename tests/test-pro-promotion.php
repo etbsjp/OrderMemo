@@ -374,6 +374,7 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 			if ( $case['expected'] ) {
 				$this->assertStringContainsString( 'utm_content=template-list', $html, $case['test_condition_name'] . '（UTM）' );
 				$this->assertStringNotContainsString( 'notice', $html, $case['test_condition_name'] . '（notice クラスを使わない）' );
+				$this->assertStringContainsString( 'clear:both', $html, $case['test_condition_name'] . '（float を解除する外側の div）' );
 				$this->assertStringContainsString( 'screen-reader-text', $html, $case['test_condition_name'] . '（新しいタブの案内）' );
 			}
 

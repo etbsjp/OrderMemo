@@ -699,14 +699,21 @@ if ( ! function_exists( 'ormm_render_pro_promotion_paragraph' ) ) {
 		if ( empty( $counts->publish ) ) {
 			return;
 		}
+		// This hook fires directly inside .tablenav.bottom, next to the floated bulk actions and pagination, and
+		// .tablenav has a fixed height. The wrapper clears the floats and lets the paragraph take its own height.
+		// このフックは .tablenav.bottom の直下で、左右に float した一括操作・ページ送りの隣に出る。.tablenav は高さ固定のため、
+		// 外側の div で float を解除し、段落が自分の高さを持てるようにする.
 		?>
-		<p class="description">
-			<?php
-			esc_html_e( 'More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers.', 'etbs-order-note-templates' );
-			echo ' ';
-			echo wp_kses_post( ormm_get_pro_promotion_link( __( 'Learn more about OrderMemo Pro', 'etbs-order-note-templates' ), 'template-list' ) );
-			?>
-		</p>
+		<div class="ormm-pro-promotion" style="clear:both;width:100%;height:auto;">
+			<p class="description">
+				<?php
+				esc_html_e( 'More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers.', 'etbs-order-note-templates' );
+				echo ' ';
+				// The link is already escaped in ormm_get_pro_promotion_link(). / リンクは組み立て側でエスケープ済み.
+				echo ormm_get_pro_promotion_link( __( 'Learn more about OrderMemo Pro', 'etbs-order-note-templates' ), 'template-list' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				?>
+			</p>
+		</div>
 		<?php
 	}
 	add_action( 'manage_posts_extra_tablenav', 'ormm_render_pro_promotion_paragraph' );
