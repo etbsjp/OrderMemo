@@ -1,7 +1,8 @@
 # ★ パターンは必ず先頭 "/" でアンカーすること。
 #   スラッシュ無しは .gitignore と同じ規則で全階層にマッチするため、
-#   同梱している inc/plugin-update-checker/ の composer.json と vendor/ まで
-#   配布物から削り落とされ、PUC が Parsedown / PucReadmeParser を読めず Fatal になる。
+#   意図しない階層の composer.json / vendor/ などまで配布物から削り落としてしまう
+#   （dist 系列では、同梱の inc/plugin-update-checker/ の composer.json と vendor/ を落として
+#   PUC が Fatal になる、という形で実際に効く。wporg 系列は PUC を持たないが、規則は同じ）。
 /.gitignore      export-ignore
 /.gitattributes  export-ignore
 /CLAUDE.md       export-ignore
@@ -11,4 +12,5 @@
 /composer.json      export-ignore
 /composer.lock      export-ignore
 /vendor/            export-ignore
+/tests/             export-ignore
 /.phpcs.xml.dist    export-ignore

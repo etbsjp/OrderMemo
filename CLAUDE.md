@@ -23,7 +23,10 @@ etbs が配布する WordPress プラグイン。共通ルールの正本は `~/
 
 ## 検証環境
 
-Local の `order-memo`（`ordermemo.etbs.lc`）。このプラグインは `dirname( __FILE__ )` を
+Local の `order-memo`（`ordermemo.etbs.lc`）。プラグインフォルダ名は公式版が
+`etbs-order-note-templates`（旧版は `ordermemo`）。検証では
+`wp-content/plugins/etbs-order-note-templates` の名前でシンボリックリンクを置き、終わったら外す。
+このプラグインは `dirname( __FILE__ )` を
 1階層のみ（同一ディレクトリの `inc/func.php` の require）に使っており `dirname( __FILE__, N )`
 の複数階層遡りは無いため、**シンボリックリンク設置でよい**。
 
@@ -61,22 +64,27 @@ CLI 検証では Local の php.ini を `-c` で渡すこと。渡さないと「
 
 ## 版数
 
-版数の置き場は `ordermemo.php` の `Version:` ヘッダの1箇所（`readme.txt` は無い）。
+版数の置き場は次の3箇所。**上げるときは3つを同時に揃えること。**
+
+- `etbs-order-note-templates.php` の `Version:` ヘッダ
+- 同ファイルの `ETBS_ONT_VERSION` 定数（旧 `ORMM_VERSION`。`inc/func.php` でスクリプト/スタイルの
+  キャッシュバスターとして使う。揃え忘れても動作は壊れないが、更新後にブラウザキャッシュが残る）
+- `readme.txt` の `Stable tag:`
 
 ```sh
-grep -n "^ \* Version:" ordermemo.php
+grep -n "^ \* Version:\|ETBS_ONT_VERSION'" etbs-order-note-templates.php
+grep -n "^Stable tag:" readme.txt
 ```
 
-★ **`ORMM_VERSION` 定数（`ordermemo.php:18`）はヘッダと別に手で書かれており、既に不一致
-（ヘッダ 1.0.1 に対して `1.0.0` のまま）。** `inc/func.php:226` でスクリプト/スタイルの
-キャッシュバスターとして使われている。**版数を上げる際はこの定数も必ず揃えること**
-（揃え忘れても動作は壊れないが、更新後にブラウザキャッシュが残る）。
+`tests/test-plugin-header.php` がこの3点の一致を検査する。
 
 ## 配布物
 
-`dist` ブランチへのマージ＝配信。PUC が配る zip には**追跡しているファイルが全部入る**ため、
-`.gitignore`（追跡させない）と `.gitattributes` の `export-ignore`（zip から落とす）は役割が別。
-両方を維持すること。
+`.gitignore`（追跡させない）と `.gitattributes` の `export-ignore`（配布 zip から落とす）は役割が別。
+配布 zip には**追跡しているファイルが全部入る**ため、両方を維持すること。`/tests/` も `export-ignore`。
+
+- `dist` ブランチ（自社配布版・フォルダ `ordermemo`）: マージ＝配信。PUC が `dist` を見て更新を配る
+- `wporg` ブランチ（公式版・フォルダ `etbs-order-note-templates`）: 下の「wporg ブランチの扱い」節
 
 ## CI（2026-08-28 導入）
 
@@ -90,13 +98,15 @@ third-party action をタグ固定にしている判断・陽性対照・配布�
 - **既存指摘の基準値: 47 ERROR / 7 WARNING**（2026-08-28 実測・`WordPress-Extra`）。
   ★ 測り直すときは `vendor/bin/phpcs --standard=./.phpcs.xml.dist --report=summary $(git ls-files '*.php')`
   の形でのみ行う。素の phpcs は `.gitignore` を尊重しない
-- **`Requires PHP: 7.4` を宣言している。** 置き場は **`ordermemo.php:6` と `readme.txt:5` の2箇所**。
-  PUC（plugin-update-checker）は配信メタデータを組み立てる際、readme 側の `requires_php` で
-  ヘッダの値を上書きする（`inc/plugin-update-checker/Puc/v5p5/Vcs/PluginUpdateChecker.php`）。
-  この値は `Puc/v5p5/Plugin/Update.php` を経由して更新トランジェントに渡り、更新画面の出し分けに
-  使われるため、**`ordermemo.php` だけ直して `readme.txt` を直し忘れると、エラーも出ないまま
-  古い readme 側の値が配信され続ける。** 変更するときは必ず両方を同時に変え、
-  CI の matrix `['7.4','8.3']` も含めて**3点を揃えること**（1箇所だけ動かさない）
+- **`Requires PHP: 7.4` を宣言している。** 置き場は **`etbs-order-note-templates.php:6` と `readme.txt:5` の2箇所**。
+  ★ 次の PUC の話は **`dist` 系列（旧版）だけ**のもの。`wporg` ブランチは PUC を持たない
+  （wordpress.org が配信メタデータを作る）。`dist` 系列では、PUC（plugin-update-checker）が配信
+  メタデータを組み立てる際、readme 側の `requires_php` でヘッダの値を上書きし
+  （`inc/plugin-update-checker/Puc/v5p5/Vcs/PluginUpdateChecker.php`）、この値は
+  `Puc/v5p5/Plugin/Update.php` を経由して更新トランジェントに渡り、更新画面の出し分けに使われる。
+  そのため、**片方だけ直して他方を直し忘れると、エラーも出ないまま古い値が配信され続ける。**
+  `wporg` でも2箇所を揃える運用は同じ（`tests/test-plugin-header.php` が一致を検査する）。
+  変更するときは必ず両方を同時に変え、CI の matrix `['7.4','8.3']` も含めて**3点を揃えること**（1箇所だけ動かさない）
 - **`composer.json` の `name` は原本のまま**（`etbsjp/widget-shortcode-tools`）。
   `composer.lock` の `content-hash` と**ペアとして整合している**ので、これでよい。
   ★ 改名するなら `composer update --lock` も必ず走らせること
@@ -116,7 +126,7 @@ third-party action をタグ固定にしている判断・陽性対照・配布�
 - このリポジトリは `Requires at least: 6.7` を**削除**した（task-queue #88）。
   理由：ブロックを登録しておらず（`block.json` / `register_block_type` / `registerBlockType` は0件）、
   自前コードの最も新しい WP API が `sanitize_textarea_field()`（WP 4.7）、
-  同梱 PUC を含めても `wp_doing_cron()`（WP 4.8）で、**6.x 帯に下限が存在しない**。
+  同梱していた PUC を含めても `wp_doing_cron()`（WP 4.8）で、**6.x 帯に下限が存在しない**。
   6.7 は初版からの定型文で、特定の API に紐づいたものではなかった
 - `Requires PHP: 7.4` は**据え置き**。★ これは実測下限ではない。「7.4 で `php -l` が通る」ことは
   7.4 で*足りる*証明であって *必要*である証明ではなく、7.3 以下は未検証。
@@ -137,3 +147,37 @@ README に合わせてヘッダへ過剰宣言を書き戻す方向に動きか�
 `Requires PHP` を新しく足すと、いま更新が届いている個体を以後届かなくする**。
 `woo-checkout-colorbox` と `widget-shortcode-tools` が無宣言なのは、この理由による意図的な判断。
 **8本で揃えにこないこと。**
+
+## wporg ブランチの扱い
+
+`wporg` は公式版（wordpress.org 向け。フォルダ・スラッグ `etbs-order-note-templates`）の系列で、
+`dist`（自社配布版・フォルダ `ordermemo`）とは別系列。**公式版の PR は `wporg` から切り、base も `wporg`。**
+`dist` には触れない（push もマージもしない）。
+
+- 公式版は PUC・ダッシュボードウィジェットを持たない。更新は wordpress.org が配る
+- 旧版と公式版は投稿タイプ `ormm_template`（利用者のテンプレート）を共有する。同時には有効化できない
+  （`inc/legacy-guard.php`。有効化時に `wp_die()`、読み込み時にも検出して機能を読み込まない）
+- ★ **止める処理より前に宣言するものは `etbs_ont_` / `ETBS_ONT_` 接頭辞にする。** `ormm_` で宣言すると、
+  先に読まれる公式版が名前を取り、旧版側の `function_exists` ガードが黙ってスキップされる
+  （`active_plugins` はソートされ、`etbs-order-note-templates/` は `ordermemo/` より先に読まれる）。
+  `inc/func.php` の `function_exists` ガードは、公式版が有効なところへ旧版を有効化したときの
+  旧版側 Fatal を防ぐため残す
+- 案内文は「無効化」だけを勧め、「削除」は勧めない（旧版 1.0.2 以前は削除時にテンプレートを全件消すため。
+  1.0.3 未満のときだけ「先に 1.0.3 以降へ更新」の1文を足す）
+- 画面の文言の英語化と翻訳ファイルは別 PR（親 issue #12 の仕様案のとおり）
+- 版数・`Stable tag` は、リリース準備の作業のとき以外は動かさない
+
+## PHPUnit
+
+`tests/` にある。**環境はリポジトリの外**（`composer.json` / `composer.lock` は変更しない）に置き、
+DB は使い捨てのものを使う。**実顧客データのある `order-memo` サイトの DB は使わない。**
+`tests/` は `export-ignore`（配布 zip に入れない）。
+
+```sh
+WP_TESTS_DIR=<wp-phpunit のパス> WP_PHPUNIT__TESTS_CONFIG=<wp-tests-config.php> PHPRC=<php.ini のあるフォルダ> \
+  php vendor/bin/phpunit -c tests/phpunit.xml.dist
+WP_TESTS_MULTISITE=1 …同じ形…   # マルチサイトでも1回走らせる
+```
+
+- `test-legacy-guard.php` … 旧版検出・有効化拒否（`wp_die`、HTTP 409）・案内・削除警告
+- `test-plugin-header.php` … ヘッダ・readme.txt・定数・Text Domain の整合
