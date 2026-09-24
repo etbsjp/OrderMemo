@@ -537,4 +537,53 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 
 		wp_delete_post( $post_id, true );
 	}
+
+	/**
+	 * ormm_admin_footer_text(): replaces the footer only on the template screens, with the support link only.
+	 * It must not carry a promotion of the paid version (issue #16 leaves the footer as it is).
+	 * ormm_admin_footer_text()：テンプレートの画面でだけ、支援リンクだけのフッターに差し替える。
+	 * 有料版の宣伝は載せない（issue #16 はフッターに触れない方針）。
+	 *
+	 * @return void
+	 */
+	public function test_ormm_admin_footer_text() {
+		$this->assertSame( 10, has_filter( 'admin_footer_text', 'ormm_admin_footer_text' ), 'admin_footer_text にフィルターが登録されている' );
+
+		$original   = 'Original footer text';
+		$test_cases = array(
+			array(
+				'test_condition_name' => 'テンプレート一覧 => 支援リンクだけの文言に差し替わる',
+				'locale'              => 'ja_JP',
+				'screen'              => 'edit-ormm_template',
+				'expected'            => true,
+			),
+			array(
+				'test_condition_name' => 'テンプレート編集画面 => 差し替わる',
+				'locale'              => 'en_US',
+				'screen'              => 'ormm_template',
+				'expected'            => true,
+			),
+			array(
+				'test_condition_name' => '投稿の一覧（edit-post）=> 元の文言のまま',
+				'locale'              => 'ja_JP',
+				'screen'              => 'edit-post',
+				'expected'            => false,
+			),
+		);
+
+		foreach ( $test_cases as $case ) {
+			$this->locale = $case['locale'];
+			set_current_screen( $case['screen'] );
+
+			$actual = ormm_admin_footer_text( $original );
+
+			if ( $case['expected'] ) {
+				$this->assertStringContainsString( 'etbs.jp/product/donate/', $actual, $case['test_condition_name'] . '（支援リンク）' );
+				$this->assertStringNotContainsString( 'ordermemo-pro', $actual, $case['test_condition_name'] . '（有料版の宣伝を含まない）' );
+				$this->assertStringNotContainsString( 'utm_content', $actual, $case['test_condition_name'] . '（有料版リンクを含まない）' );
+			} else {
+				$this->assertSame( $original, $actual, $case['test_condition_name'] );
+			}
+		}
+	}
 }

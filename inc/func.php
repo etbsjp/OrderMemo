@@ -773,3 +773,29 @@ if ( ! function_exists( 'ormm_add_pro_promotion_style' ) ) {
 	}
 	add_action( 'admin_enqueue_scripts', 'ormm_add_pro_promotion_style' );
 }
+
+/*-------------------------------------------*/
+/* Support link (footer of the template list and edit screens)
+/* 支援リンク（テンプレート一覧・編集画面のフッター）
+/*-------------------------------------------*/
+if ( ! function_exists( 'ormm_admin_footer_text' ) ) {
+	/**
+	 * Replaces the admin footer text on the template screens with a support link.
+	 * テンプレートの画面のフッター文言を、支援リンクだけのものに差し替える。
+	 *
+	 * @param string $text Original footer text.
+	 * @return string Footer text.
+	 */
+	function ormm_admin_footer_text( $text ) {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'ormm_template' !== $screen->post_type ) { return $text; }
+		$link = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
+			. esc_html__( 'consider supporting its development', 'etbs-order-note-templates' ) . '</a>';
+		return sprintf(
+			/* translators: %s: link to the donation page. The link text is "consider supporting its development". */
+			esc_html__( 'If you find this plugin useful, %s.', 'etbs-order-note-templates' ),
+			$link
+		);
+	}
+	add_filter( 'admin_footer_text', 'ormm_admin_footer_text' );
+}
