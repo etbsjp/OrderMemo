@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       ETBS Order Note Templates for WooCommerce
- * Description:       WooCommerceの注文編集画面にテンプレート挿入機能を追加し、定型文（差し込みタグ対応）をワンクリックで注文メモに入力できるプラグイン
+ * Description:       Adds a template picker to the WooCommerce order edit screen, so you can put reusable notes (with placeholders) into an order note in one click.
  * Version:           1.0.4
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce

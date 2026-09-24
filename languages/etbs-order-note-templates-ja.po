@@ -1,0 +1,272 @@
+# Copyright (C) 2026 ETBS (DAI)
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: ETBS Order Note Templates for WooCommerce 1.0.4\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/etbs-order-note-templates\n"
+"Last-Translator: ETBS (DAI)\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-24T06:51:34+00:00\n"
+"PO-Revision-Date: 2026-09-24 15:00+0900\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Domain: etbs-order-note-templates\n"
+
+#. Plugin Name of the plugin
+#: etbs-order-note-templates.php
+msgid "ETBS Order Note Templates for WooCommerce"
+msgstr "ETBS Order Note Templates（OrderMemo）"
+
+#. Plugin URI of the plugin
+#: etbs-order-note-templates.php
+msgid "https://etbs.jp/product-category/wordpress-tools/"
+msgstr ""
+
+#. Description of the plugin
+#: etbs-order-note-templates.php
+msgid "Adds a template picker to the WooCommerce order edit screen, so you can put reusable notes (with placeholders) into an order note in one click."
+msgstr "WooCommerceの注文編集画面にテンプレート挿入機能を追加し、定型文（差し込みタグ対応）をワンクリックで注文メモに入力できるプラグイン"
+
+#. Author of the plugin
+#: etbs-order-note-templates.php
+msgid "ETBS (DAI)"
+msgstr ""
+
+#. Author URI of the plugin
+#: etbs-order-note-templates.php
+msgid "https://etbs.jp"
+msgstr ""
+
+#: inc/func.php:19
+msgid "Order Note Templates requires WooCommerce."
+msgstr "OrderMemoの利用にはWooCommerceが必要です。"
+
+#: inc/func.php:21
+msgid "Please install and activate WooCommerce."
+msgstr "WooCommerceをインストール・有効化してください。"
+
+#: inc/func.php:60
+msgid "Order Note Templates"
+msgstr "注文メモテンプレート"
+
+#. translators: Do not start with the translation of "Orders" (for example "注文" in Japanese). WooCommerce attaches the processing-orders count badge to the first submenu whose title starts with "Orders", so a title starting with it would take the badge.
+#: inc/func.php:67
+msgid "Note Templates"
+msgstr "メモテンプレート"
+
+#: inc/func.php:68
+msgid "Order Note Template"
+msgstr "注文メモテンプレート"
+
+#: inc/func.php:69
+msgid "Add New"
+msgstr "新規追加"
+
+#: inc/func.php:70
+msgid "Add Template"
+msgstr "テンプレートを追加"
+
+#: inc/func.php:71
+msgid "Edit Template"
+msgstr "テンプレートを編集"
+
+#: inc/func.php:72
+msgid "New Template"
+msgstr "新規テンプレート"
+
+#: inc/func.php:73
+msgid "Search Templates"
+msgstr "テンプレートを検索"
+
+#: inc/func.php:74
+msgid "No templates found."
+msgstr "テンプレートが見つかりません"
+
+#: inc/func.php:75
+msgid "No templates found in Trash."
+msgstr "ゴミ箱にテンプレートはありません"
+
+#: inc/func.php:118
+msgid "Billing name"
+msgstr "請求先の氏名"
+
+#: inc/func.php:119
+msgid "Order number"
+msgstr "注文番号"
+
+#: inc/func.php:120
+msgid "Order date"
+msgstr "注文日"
+
+#: inc/func.php:121
+msgid "Order total, with the currency symbol"
+msgstr "合計金額（通貨記号付き）"
+
+#: inc/func.php:122
+msgid "Payment method"
+msgstr "支払方法"
+
+#: inc/func.php:123
+msgid "Shipping method"
+msgstr "配送方法"
+
+#: inc/func.php:124
+msgid "Site title"
+msgstr "サイト名"
+
+#: inc/func.php:142
+msgid "Template body"
+msgstr "テンプレート本文"
+
+#: inc/func.php:150
+msgid "Available placeholders"
+msgstr "利用できる差し込みタグ"
+
+#: inc/func.php:171
+msgid "Hi {customer_name}, your order #{order_number} has been shipped today."
+msgstr "例：{customer_name} 様　ご注文番号 {order_number} の商品を本日発送いたしました。"
+
+#: inc/func.php:175
+msgid "Enter plain text."
+msgstr "プレーンテキストで入力してください。"
+
+#: inc/func.php:177
+msgid "Placeholders are replaced with the data of the order when you insert the template on the order edit screen."
+msgstr "差し込みタグは注文編集画面での挿入時に、その注文のデータに展開されます。"
+
+#: inc/func.php:179
+msgid "HTML tags are removed when the template is saved."
+msgstr "HTMLタグは保存時に除去されます。"
+
+#: inc/func.php:181
+msgid "If you add the note as a \"Note to customer\", it is emailed to the customer, so check the text before you click \"Add note\"."
+msgstr "「顧客へのメモ」として追加するとお客様にメールで送信されますので、「追加」の前に文面を確認してください。"
+
+#. translators: %s: name of the filter hook, wrapped in a code tag. Do not translate it.
+#: inc/func.php:202
+#, php-format
+msgid "For developers: you can add your own placeholders with the %s filter."
+msgstr "開発者向け：%s フィルターで独自タグを追加できます。"
+
+#: inc/func.php:304
+msgid "Insert from template"
+msgstr "テンプレートから挿入"
+
+#: inc/func.php:305
+msgid "Select a template"
+msgstr "テンプレートを選択"
+
+#: inc/func.php:306
+msgid "Insert"
+msgstr "挿入"
+
+#: inc/func.php:308
+msgid "Failed to load the template."
+msgstr "テンプレートの読み込みに失敗しました。"
+
+#: inc/func.php:308
+#: inc/func.php:340
+#: inc/func.php:345
+msgid "Reload the page and try again."
+msgstr "ページを再読み込みしてやり直してください。"
+
+#: inc/func.php:329
+msgid "You do not have permission to insert templates."
+msgstr "テンプレートを挿入する権限がありません。"
+
+#: inc/func.php:329
+msgid "Ask a site administrator to grant you access."
+msgstr "サイトの管理者に権限の付与を依頼してください。"
+
+#: inc/func.php:332
+msgid "WooCommerce is not active."
+msgstr "WooCommerceが有効ではありません。"
+
+#: inc/func.php:332
+msgid "Activate WooCommerce and try again."
+msgstr "WooCommerceを有効化してからやり直してください。"
+
+#: inc/func.php:340
+msgid "The template could not be found; it may have been deleted or unpublished."
+msgstr "テンプレートが見つかりません。削除または非公開にされた可能性があります。"
+
+#: inc/func.php:345
+msgid "The order could not be found; it may have been deleted."
+msgstr "注文が見つかりません。削除された可能性があります。"
+
+#: inc/func.php:371
+msgid "Support development"
+msgstr "開発を支援"
+
+#: inc/func.php:392
+msgid "consider supporting its development"
+msgstr "開発を支援"
+
+#. translators: %s: link to the donation page. The link text is "consider supporting its development".
+#: inc/func.php:395
+#, php-format
+msgid "If you find this plugin useful, %s."
+msgstr "OrderMemoが役に立ったら、%s からどうぞ。"
+
+#. translators: 1: Name of the old plugin. 2: Version number.
+#: inc/legacy-guard.php:182
+#, php-format
+msgid "If you delete %1$s, update it to version %2$s or later first."
+msgstr "%1$s を削除する場合は、先にバージョン %2$s 以降へ更新してください。"
+
+#: inc/legacy-guard.php:186
+msgid "Earlier versions delete all of your templates when the plugin is deleted."
+msgstr "それより前のバージョンは、プラグインを削除するとテンプレートをすべて削除します。"
+
+#: inc/legacy-guard.php:204
+msgid "The two plugins share the same note templates, so only one of them can run at a time."
+msgstr "2つのプラグインは同じメモテンプレートを共有するため、同時に動かせるのはどちらか一方だけです。"
+
+#. translators: %s: Name of the old plugin.
+#: inc/legacy-guard.php:207
+#, php-format
+msgid "Deactivate %s to switch over."
+msgstr "切り替えるには %s を無効化してください。"
+
+#: inc/legacy-guard.php:209
+msgid "Your saved templates are kept."
+msgstr "保存済みのテンプレートは残ります。"
+
+#. translators: %s: Name of the old plugin.
+#: inc/legacy-guard.php:278
+#, php-format
+msgid "ETBS Order Note Templates for WooCommerce was not activated because %s is still active on this site."
+msgstr "%s がこのサイトでまだ有効なため、ETBS Order Note Templates（OrderMemo）は有効化されませんでした。"
+
+#: inc/legacy-guard.php:288
+msgid "After deactivating it, activate this plugin again."
+msgstr "無効化したあと、このプラグインをもう一度有効化してください。"
+
+#. translators: %s: Name of the old plugin.
+#: inc/legacy-guard.php:293
+#: inc/legacy-guard.php:374
+#, php-format
+msgid "Deactivate %s"
+msgstr "%s を無効化"
+
+#: inc/legacy-guard.php:297
+msgid "Back to Plugins"
+msgstr "プラグイン一覧へ戻る"
+
+#: inc/legacy-guard.php:302
+msgid "Cannot activate ETBS Order Note Templates for WooCommerce"
+msgstr "ETBS Order Note Templates（OrderMemo）を有効化できません"
+
+#. translators: %s: Name of the old plugin.
+#: inc/legacy-guard.php:356
+#, php-format
+msgid "ETBS Order Note Templates for WooCommerce is not running because %s is still active on this site."
+msgstr "%s がこのサイトでまだ有効なため、ETBS Order Note Templates（OrderMemo）は動作していません。"
+
+#: inc/legacy-guard.php:366
+msgid "The old plugin keeps working in the meantime."
+msgstr "それまでのあいだは、旧プラグインがそのまま動作します。"
