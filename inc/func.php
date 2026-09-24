@@ -676,35 +676,73 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 /* A paragraph under the template list
 /* テンプレート一覧の表の下の1段落
 /*-------------------------------------------*/
+if ( ! function_exists( 'ormm_is_template_list_promotion_shown' ) ) {
+	/**
+	 * Tells whether the OrderMemo Pro paragraph is shown on the current screen (the template list).
+	 * The paragraph and the CSS that keeps the table footer from breaking share this one decision.
+	 * Not shown when no template is published yet, so that the first thing a new user sees is the way to create one.
+	 * 現在の画面（テンプレート一覧）で OrderMemo Pro の案内段落を出すかを返す。
+	 * 段落と、表のフッターの崩れを防ぐ CSS は、この1つの判定を共有する。
+	 * 公開済みのテンプレートが0件のときは出さない（初めて開いた人に最初に見せるのは、最初のテンプレートを作る導線）。
+	 *
+	 * @return bool True when the paragraph is shown.
+	 */
+	function ormm_is_template_list_promotion_shown() {
+		if ( ! ormm_is_pro_promotion_visible() || ! current_user_can( 'activate_plugins' ) ) {
+			return false;
+		}
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-ormm_template' !== $screen->id ) {
+			return false;
+		}
+		// wp_count_posts() is cached and needs no query per post. / wp_count_posts() はキャッシュされ、投稿ごとのクエリが要らない.
+		$counts = wp_count_posts( 'ormm_template' );
+		return ! empty( $counts->publish );
+	}
+}
+
+if ( ! function_exists( 'ormm_enqueue_pro_promotion_style' ) ) {
+	/**
+	 * Adds a few CSS rules to the template list, only while the OrderMemo Pro paragraph is shown.
+	 * WordPress gives .tablenav a fixed height (32px) and floats its children, so a paragraph placed inside
+	 * .tablenav.bottom overflows the footer. Here the footer becomes a wrapping flex row: the bulk actions and the
+	 * pagination stay on the first line and the paragraph takes its own full-width line below them.
+	 * OrderMemo Pro の案内段落を出しているときだけ、テンプレート一覧に数行の CSS を足す。
+	 * WordPress は .tablenav を固定高（32px）にして子を float させるため、.tablenav.bottom の中に段落を置くと表のフッターから溢れる。
+	 * そこでフッターを折り返す flex にし、一括操作とページ送りは1行目に残し、段落は下の1行を全幅で使う。
+	 *
+	 * @return void
+	 */
+	function ormm_enqueue_pro_promotion_style() {
+		if ( ! ormm_is_template_list_promotion_shown() ) {
+			return;
+		}
+		$css = '.tablenav.bottom{height:auto;display:flex;flex-wrap:wrap;align-items:center}'
+			. '.tablenav.bottom .tablenav-pages{margin-left:auto}'
+			. '.tablenav.bottom br.clear{display:none}'
+			. '.tablenav.bottom .ormm-pro-promotion{order:3;flex:0 0 100%}';
+		// "list-tables" is the core stylesheet that defines .tablenav; the rules must come after it.
+		// "list-tables" は .tablenav を定義しているコアのスタイル。この CSS はその後に出す必要がある.
+		wp_add_inline_style( 'list-tables', $css );
+	}
+	add_action( 'admin_enqueue_scripts', 'ormm_enqueue_pro_promotion_style' );
+}
+
 if ( ! function_exists( 'ormm_render_pro_promotion_paragraph' ) ) {
 	/**
 	 * Prints one paragraph about OrderMemo Pro under the template list table.
-	 * Not shown when no template is published yet, so that the first thing a new user sees is the way to create one.
 	 * テンプレート一覧の表の下に、OrderMemo Pro の案内を1段落出す。
-	 * 公開済みのテンプレートが0件のときは出さない（初めて開いた人に最初に見せるのは、最初のテンプレートを作る導線）。
 	 *
 	 * @param string $which Position of the tablenav: 'top' or 'bottom'.
 	 * @return void
 	 */
 	function ormm_render_pro_promotion_paragraph( $which ) {
-		if ( 'bottom' !== $which || ! ormm_is_pro_promotion_visible() || ! current_user_can( 'activate_plugins' ) ) {
+		if ( 'bottom' !== $which || ! ormm_is_template_list_promotion_shown() ) {
 			return;
 		}
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( ! $screen || 'edit-ormm_template' !== $screen->id ) {
-			return;
-		}
-		// wp_count_posts() is cached and needs no query per post. / wp_count_posts() はキャッシュされ、投稿ごとのクエリが要らない.
-		$counts = wp_count_posts( 'ormm_template' );
-		if ( empty( $counts->publish ) ) {
-			return;
-		}
-		// This hook fires directly inside .tablenav.bottom, next to the floated bulk actions and pagination, and
-		// .tablenav has a fixed height. The wrapper clears the floats and lets the paragraph take its own height.
-		// このフックは .tablenav.bottom の直下で、左右に float した一括操作・ページ送りの隣に出る。.tablenav は高さ固定のため、
-		// 外側の div で float を解除し、段落が自分の高さを持てるようにする.
+		// The layout of this wrapper is set by ormm_enqueue_pro_promotion_style(). / この div の配置は ormm_enqueue_pro_promotion_style() が決める.
 		?>
-		<div class="ormm-pro-promotion" style="clear:both;width:100%;height:auto;">
+		<div class="ormm-pro-promotion">
 			<p class="description">
 				<?php
 				esc_html_e( 'More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers.', 'etbs-order-note-templates' );

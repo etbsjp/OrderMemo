@@ -56,6 +56,20 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Runs ormm_enqueue_pro_promotion_style() on a fresh style queue and returns the inline CSS added to "list-tables".
+	 * 新しいスタイルキューで ormm_enqueue_pro_promotion_style() を実行し、"list-tables" に足された CSS を返す。
+	 *
+	 * @return string Inline CSS. Empty when nothing was added.
+	 */
+	private function get_inline_css() {
+		// Start from an empty style queue so that the cases do not affect each other. / ケース同士が影響しないよう、キューを空から始める.
+		$GLOBALS['wp_styles'] = null;
+		ormm_enqueue_pro_promotion_style();
+		$after = wp_styles()->get_data( 'list-tables', 'after' );
+		return is_array( $after ) ? implode( '', array_filter( $after ) ) : '';
+	}
+
+	/**
 	 * ormm_is_japanese_site(): true only when the locale starts with "ja".
 	 * ormm_is_japanese_site()：ロケールが ja で始まるときだけ true。
 	 *
@@ -371,10 +385,18 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 			$html     = $this->get_paragraph( $case['which'] );
 			$is_shown = '' !== trim( $html );
 			$this->assertSame( $case['expected'], $is_shown, $case['test_condition_name'] );
+			// 表のフッターの崩れを防ぐ CSS は、案内を出すときだけ出る（条件外では一切出ない）.
+			$css = $this->get_inline_css();
+			$this->assertSame( $case['expected'], '' !== $css, $case['test_condition_name'] . '（CSS の有無は案内の有無と一致）' );
+			if ( $case['expected'] ) {
+				$this->assertStringContainsString( 'height:auto', $css, $case['test_condition_name'] . '（.tablenav.bottom の固定高を解く）' );
+				$this->assertStringContainsString( '.tablenav.bottom .ormm-pro-promotion', $css, $case['test_condition_name'] . '（段落を全幅の下段に置く）' );
+			}
 			if ( $case['expected'] ) {
 				$this->assertStringContainsString( 'utm_content=template-list', $html, $case['test_condition_name'] . '（UTM）' );
 				$this->assertStringNotContainsString( 'notice', $html, $case['test_condition_name'] . '（notice クラスを使わない）' );
-				$this->assertStringContainsString( 'clear:both', $html, $case['test_condition_name'] . '（float を解除する外側の div）' );
+				$this->assertStringNotContainsString( 'style=', $html, $case['test_condition_name'] . '（配置はインラインではなく CSS 側）' );
+				$this->assertStringContainsString( 'class="ormm-pro-promotion"', $html, $case['test_condition_name'] . '（CSS が掛かる外側の div）' );
 				$this->assertStringContainsString( 'screen-reader-text', $html, $case['test_condition_name'] . '（新しいタブの案内）' );
 			}
 
