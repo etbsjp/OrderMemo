@@ -274,6 +274,10 @@ msgid "OrderMemo Pro (paid add-on)"
 msgstr ""
 
 #: inc/func.php
+msgid "(opens in a new tab)"
+msgstr ""
+
+#: inc/func.php
 msgid "More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers."
 msgstr ""
 

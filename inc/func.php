@@ -663,10 +663,9 @@ if ( ! function_exists( 'ormm_get_new_tab_screen_reader_text' ) ) {
 	 * @return string HTML of the screen-reader-only span.
 	 */
 	function ormm_get_new_tab_screen_reader_text() {
-		// Reuses the WordPress core string (default text domain), so it is already translated.
-		// WordPress 本体の文言（デフォルトのテキストドメイン）を使うので、翻訳済み.
-		// phpcs:ignore WordPress.WP.I18n.TextDomainMismatch
-		return '<span class="screen-reader-text"> ' . esc_html__( '(opens in a new tab)' ) . '</span>';
+		// Uses this plugin's text domain: WordPress.org requires every string to carry it (Plugin Check reports a missing domain as an error).
+		// このプラグインのテキストドメインを使う。WordPress.org では全文字列に必要（Plugin Check はドメイン無しをエラーにする）.
+		return '<span class="screen-reader-text"> ' . esc_html__( '(opens in a new tab)', 'etbs-order-note-templates' ) . '</span>';
 	}
 }
 
