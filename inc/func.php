@@ -646,7 +646,8 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 				. ormm_get_new_tab_screen_reader_text() . '</a>';
 		}
 		$links[] = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
-			. esc_html__( 'Support development', 'etbs-order-note-templates' ) . '</a>';
+			. esc_html__( 'Support development', 'etbs-order-note-templates' )
+			. ormm_get_new_tab_screen_reader_text() . '</a>';
 		return $links;
 	}
 	add_filter( 'plugin_row_meta', 'ormm_plugin_row_meta', 10, 2 );
@@ -673,14 +674,54 @@ if ( ! function_exists( 'ormm_get_new_tab_screen_reader_text' ) ) {
 /* Paid version notice (below the template list table, Japanese sites only)
 /* 有料版の案内（テンプレート一覧の表の下。日本語のサイトだけ）
 /*-------------------------------------------*/
+if ( ! function_exists( 'ormm_can_show_pro_promotion_below_list' ) ) {
+	/**
+	 * Tells whether the paid version paragraph may be shown on the current screen.
+	 * Requires: a Japanese site, the template list screen, activate_plugins, at least one published
+	 * template, and not the trash view. The bottom tablenav is not printed at all when the list shows
+	 * no rows (empty search result, empty filter), so those cases need no check of their own.
+	 * 有料版の段落を、いまの画面で出してよいかを返す。
+	 * 条件は、日本語のサイト・テンプレート一覧画面・activate_plugins・公開済みテンプレートが 1 件以上・
+	 * ゴミ箱ビューでないこと。一覧の行が 0 件（検索結果なし・絞り込みで 0 件）のときは、本体が
+	 * 下側の tablenav ごと出さないため、その場合の判定はここでは要らない。
+	 *
+	 * @since 1.1.0
+	 *
+	 * @return bool True to show the paragraph.
+	 */
+	function ormm_can_show_pro_promotion_below_list() {
+		if ( ! ormm_should_show_ja_promotion() || ! current_user_can( 'activate_plugins' ) ) {
+			return false;
+		}
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'edit-ormm_template' !== $screen->id ) {
+			return false;
+		}
+		// The trash view lists templates that are on their way out: do not advertise there.
+		// ゴミ箱ビューは削除予定のテンプレートを並べる画面なので、案内は出さない.
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only view switch, nothing is changed.
+		$post_status = isset( $_GET['post_status'] ) ? sanitize_key( wp_unslash( $_GET['post_status'] ) ) : '';
+		if ( 'trash' === $post_status ) {
+			return false;
+		}
+		// No published template yet: show nothing, the list itself points to creating the first one.
+		// 公開済みのテンプレートがまだ無い: 何も出さない（一覧自体が最初の 1 件を作る導線になる）.
+		$counts = wp_count_posts( 'ormm_template' );
+		return ! empty( $counts->publish );
+	}
+}
+
 if ( ! function_exists( 'ormm_render_pro_promotion_below_list' ) ) {
 	/**
 	 * Prints one paragraph about the paid version below the template list table.
-	 * It is not an admin notice. It is skipped when there are no published templates, so that
-	 * the first thing a new user sees is the way to create the first template.
+	 * It is not an admin notice. See ormm_can_show_pro_promotion_below_list() for when it is skipped.
+	 * The core calls this hook right after the "actions" div, so the markup lands directly in
+	 * div.tablenav.bottom. The wrapper div (cleared by ormm_add_pro_promotion_style()) keeps it below
+	 * the pagination instead of overlapping it.
 	 * テンプレート一覧の表の下に、有料版の案内を 1 段落出す。
-	 * 管理画面の通知（admin_notices）ではない。公開済みのテンプレートが 0 件のときは出さない
-	 * （初めて開いた人に最初に見せるのは、最初のテンプレートを作る導線にするため）。
+	 * 管理画面の通知（admin_notices）ではない。出さない条件は ormm_can_show_pro_promotion_below_list() を参照。
+	 * 本体はこのフックを "actions" の div の直後で呼ぶため、出力は div.tablenav.bottom の直下に入る。
+	 * 包んだ div（ormm_add_pro_promotion_style() で clear する）で、ページ送りと重ならず下に回す。
 	 *
 	 * @since 1.1.0
 	 *
@@ -688,51 +729,47 @@ if ( ! function_exists( 'ormm_render_pro_promotion_below_list' ) ) {
 	 * @return void
 	 */
 	function ormm_render_pro_promotion_below_list( $which ) {
-		if ( 'bottom' !== $which || ! ormm_should_show_ja_promotion() || ! current_user_can( 'activate_plugins' ) ) {
-			return;
-		}
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( ! $screen || 'edit-ormm_template' !== $screen->id ) {
-			return;
-		}
-		// No published template yet: show nothing, the list itself points to creating the first one.
-		// 公開済みのテンプレートがまだ無い: 何も出さない（一覧自体が最初の 1 件を作る導線になる）.
-		$counts = wp_count_posts( 'ormm_template' );
-		if ( empty( $counts->publish ) ) {
+		if ( 'bottom' !== $which || ! ormm_can_show_pro_promotion_below_list() ) {
 			return;
 		}
 		?>
-		<p class="description">
-			<?php echo esc_html__( 'More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers.', 'etbs-order-note-templates' ); ?>
-			<a href="<?php echo esc_url( ormm_get_pro_promotion_url( 'template-list' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__( 'Learn more about OrderMemo Pro', 'etbs-order-note-templates' ); ?><?php echo wp_kses( ormm_get_new_tab_screen_reader_text(), array( 'span' => array( 'class' => array() ) ) ); ?></a>
-		</p>
+		<div class="ormm-pro-promotion">
+			<p class="description">
+				<?php echo esc_html__( 'More automation is available with OrderMemo Pro, a paid add-on: add notes automatically when an order status changes, add notes to several orders at once from the order list, and insert tracking numbers.', 'etbs-order-note-templates' ); ?>
+				<a href="<?php echo esc_url( ormm_get_pro_promotion_url( 'template-list' ) ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html__( 'Learn more about OrderMemo Pro', 'etbs-order-note-templates' ); ?><?php echo wp_kses( ormm_get_new_tab_screen_reader_text(), array( 'span' => array( 'class' => array() ) ) ); ?></a>
+			</p>
+		</div>
 		<?php
 	}
 	add_action( 'manage_posts_extra_tablenav', 'ormm_render_pro_promotion_below_list' );
 }
 
-/*-------------------------------------------*/
-/* Support link (footer of the template list and edit screens)
-/* 支援リンク（テンプレート一覧・編集画面のフッター）
-/*-------------------------------------------*/
-if ( ! function_exists( 'ormm_admin_footer_text' ) ) {
+if ( ! function_exists( 'ormm_add_pro_promotion_style' ) ) {
 	/**
-	 * Replaces the admin footer text on the template screens with a support link.
-	 * テンプレートの画面のフッター文言を、支援リンクだけのものに差し替える。
+	 * Adds the small stylesheet the paragraph needs, only on the screen where the paragraph is shown.
+	 * The core gives .tablenav a fixed height of 32px and floats the pagination to the right, so a
+	 * paragraph that wraps would overflow and overlap. Also cancels the synthesized italic, which
+	 * Japanese text gets from the browser.
+	 * 段落に必要な最小限の CSS を、段落を出す画面にだけ足す。
+	 * 本体は .tablenav の高さを 32px に固定し、ページ送りを右に float させるため、折り返す段落は
+	 * あふれて重なる。日本語がブラウザによって擬似斜体にされるのも打ち消す。
 	 *
-	 * @param string $text Original footer text.
-	 * @return string Footer text.
+	 * @since 1.1.0
+	 *
+	 * @return void
 	 */
-	function ormm_admin_footer_text( $text ) {
-		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
-		if ( ! $screen || 'ormm_template' !== $screen->post_type ) { return $text; }
-		$link = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
-			. esc_html__( 'consider supporting its development', 'etbs-order-note-templates' ) . '</a>';
-		return sprintf(
-			/* translators: %s: link to the donation page. The link text is "consider supporting its development". */
-			esc_html__( 'If you find this plugin useful, %s.', 'etbs-order-note-templates' ),
-			$link
+	function ormm_add_pro_promotion_style() {
+		if ( ! ormm_can_show_pro_promotion_below_list() ) {
+			return;
+		}
+		// The "common" handle is loaded on every admin screen, so the CSS needs no file of its own.
+		// "common" は管理画面のすべてで読み込まれるため、専用のファイルは要らない.
+		wp_add_inline_style(
+			'common',
+			'.tablenav.bottom{height:auto}'
+			. '.ormm-pro-promotion{clear:both}'
+			. '.ormm-pro-promotion .description{font-style:normal}'
 		);
 	}
-	add_filter( 'admin_footer_text', 'ormm_admin_footer_text' );
+	add_action( 'admin_enqueue_scripts', 'ormm_add_pro_promotion_style' );
 }

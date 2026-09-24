@@ -53,7 +53,8 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 	public function tear_down() {
 		remove_filter( 'locale', array( $this, 'filter_locale' ) );
 		remove_all_filters( 'ormm_show_pro_promotion' );
-		unset( $GLOBALS['current_screen'] );
+		unset( $GLOBALS['current_screen'], $_GET['post_status'] );
+		wp_deregister_style( 'common' );
 		parent::tear_down();
 	}
 
@@ -289,6 +290,8 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 
 			$this->assertCount( $case['expected_count'], $links, $case['test_condition_name'] );
 			$this->assertSame( $case['expected_pro'], 0 < substr_count( $html, 'utm_content=plugin-row' ), $case['test_condition_name'] . '（有料版リンク）' );
+			// 新しいタブで開くリンクには、すべて screen-reader-text が付く（有料版・開発を支援の両方）.
+			$this->assertSame( $case['expected_count'], substr_count( $html, 'screen-reader-text' ), $case['test_condition_name'] . '（新しいタブで開く旨）' );
 			// esc_url() が通っていれば、href に生の & は残らない.
 			$this->assertSame( 0, preg_match( '/href="[^"]*&(?!#038;|amp;)/', $html ), $case['test_condition_name'] . '（生の & が残らない）' );
 		}
@@ -309,6 +312,7 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 				'locale'              => 'ja_JP',
 				'filter_return'       => null,
 				'published'           => 1,
+				'post_status'         => '',
 				'screen'              => 'edit-ormm_template',
 				'which'               => 'bottom',
 				'expected'            => true,
@@ -318,6 +322,7 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 				'locale'              => 'ja_JP',
 				'filter_return'       => null,
 				'published'           => 1,
+				'post_status'         => '',
 				'screen'              => 'edit-ormm_template',
 				'which'               => 'top',
 				'expected'            => false,
@@ -327,6 +332,7 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 				'locale'              => 'ja_JP',
 				'filter_return'       => null,
 				'published'           => 1,
+				'post_status'         => '',
 				'screen'              => 'edit-post',
 				'which'               => 'bottom',
 				'expected'            => false,
@@ -336,6 +342,7 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 				'locale'              => 'en_US',
 				'filter_return'       => null,
 				'published'           => 1,
+				'post_status'         => '',
 				'screen'              => 'edit-ormm_template',
 				'which'               => 'bottom',
 				'expected'            => false,
@@ -345,15 +352,37 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 				'locale'              => 'ja_JP',
 				'filter_return'       => false,
 				'published'           => 1,
+				'post_status'         => '',
 				'screen'              => 'edit-ormm_template',
 				'which'               => 'bottom',
 				'expected'            => false,
+			),
+			array(
+				'test_condition_name' => 'ゴミ箱ビュー（post_status=trash）=> 出ない',
+				'locale'              => 'ja_JP',
+				'filter_return'       => null,
+				'published'           => 1,
+				'post_status'         => 'trash',
+				'screen'              => 'edit-ormm_template',
+				'which'               => 'bottom',
+				'expected'            => false,
+			),
+			array(
+				'test_condition_name' => '公開ビュー（post_status=publish）=> 出る',
+				'locale'              => 'ja_JP',
+				'filter_return'       => null,
+				'published'           => 1,
+				'post_status'         => 'publish',
+				'screen'              => 'edit-ormm_template',
+				'which'               => 'bottom',
+				'expected'            => true,
 			),
 			array(
 				'test_condition_name' => '公開済みのテンプレートが 0 件 => 出ない',
 				'locale'              => 'ja_JP',
 				'filter_return'       => null,
 				'published'           => 0,
+				'post_status'         => '',
 				'screen'              => 'edit-ormm_template',
 				'which'               => 'bottom',
 				'expected'            => false,
@@ -390,9 +419,17 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 				)
 			);
 
+			if ( '' === $case['post_status'] ) {
+				unset( $_GET['post_status'] );
+			} else {
+				$_GET['post_status'] = $case['post_status'];
+			}
+
 			$html = $this->render_below_list( $case['screen'], $case['which'] );
 
 			$this->assertSame( $case['expected'], 0 < substr_count( $html, 'utm_content=template-list' ), $case['test_condition_name'] );
+			// 段落は clear 用の div に包まれる（tablenav の固定高さであふれないため）.
+			$this->assertSame( $case['expected'], 0 < substr_count( $html, 'class="ormm-pro-promotion"' ), $case['test_condition_name'] . '（包み div）' );
 			if ( $case['expected'] ) {
 				// 通知風ではなく p.description で、リンクの行き先が分かる文言になっている.
 				$this->assertStringContainsString( '<p class="description">', $html, $case['test_condition_name'] . '（p.description）' );
@@ -444,6 +481,58 @@ class Test_Etbs_Ont_Pro_Promotion extends WP_UnitTestCase {
 			$html = $this->render_below_list( 'edit-ormm_template', 'bottom' );
 
 			$this->assertSame( $case['expected'], 0 < substr_count( $html, 'utm_content=template-list' ), $case['test_condition_name'] );
+		}
+
+		wp_delete_post( $post_id, true );
+	}
+
+	/**
+	 * ormm_add_pro_promotion_style(): adds the small inline CSS only where the paragraph is shown.
+	 * ormm_add_pro_promotion_style()：段落を出す画面にだけ、最小限のインライン CSS を足す。
+	 *
+	 * @return void
+	 */
+	public function test_ormm_add_pro_promotion_style() {
+		$this->login_as_admin();
+		$post_id = self::factory()->post->create(
+			array(
+				'post_type'   => 'ormm_template',
+				'post_status' => 'publish',
+			)
+		);
+
+		$test_cases = array(
+			array(
+				'test_condition_name' => '日本語サイトのテンプレート一覧 => CSS が足される',
+				'locale'              => 'ja_JP',
+				'screen'              => 'edit-ormm_template',
+				'expected'            => true,
+			),
+			array(
+				'test_condition_name' => '英語サイトのテンプレート一覧 => 足されない',
+				'locale'              => 'en_US',
+				'screen'              => 'edit-ormm_template',
+				'expected'            => false,
+			),
+			array(
+				'test_condition_name' => '日本語サイトでも別の一覧 => 足されない',
+				'locale'              => 'ja_JP',
+				'screen'              => 'edit-post',
+				'expected'            => false,
+			),
+		);
+
+		foreach ( $test_cases as $case ) {
+			$this->locale = $case['locale'];
+			// 使い捨てのテストサイトには管理画面の CSS が登録されていないため、毎回 common を登録し直す.
+			wp_deregister_style( 'common' );
+			wp_register_style( 'common', false, array(), ETBS_ONT_VERSION );
+			set_current_screen( $case['screen'] );
+
+			ormm_add_pro_promotion_style();
+
+			$css = implode( '', (array) wp_styles()->get_data( 'common', 'after' ) );
+			$this->assertSame( $case['expected'], 0 < substr_count( $css, '.ormm-pro-promotion' ), $case['test_condition_name'] );
 		}
 
 		wp_delete_post( $post_id, true );
