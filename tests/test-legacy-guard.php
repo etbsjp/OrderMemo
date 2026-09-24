@@ -505,6 +505,7 @@ class Test_Etbs_Ont_Legacy_Guard extends WP_UnitTestCase {
 				$this->assertSame( 409, $status, $case['test_condition_name'] . '（HTTP ステータス）' );
 				$this->assertStringContainsString( 'was not activated', $message, $case['test_condition_name'] . '（理由）' );
 				$this->assertStringContainsString( 'action=deactivate', $message, $case['test_condition_name'] . '（無効化リンク）' );
+				$this->assertStringContainsString( 'After deactivating it, activate this plugin again.', $message, $case['test_condition_name'] . '（無効化したあとの次の手順）' );
 				$this->assertStringContainsString( admin_url( 'plugins.php' ) . '">Back to Plugins', $message, $case['test_condition_name'] . '（プラグイン一覧へ戻るリンク）' );
 				// The predecessor's file is not on disk in the test site, so its version is unknown and the warning is shown.
 				// テスト用サイトに前身のファイルは無く、版数が読めないため、警告は出る.
@@ -625,6 +626,8 @@ class Test_Etbs_Ont_Legacy_Guard extends WP_UnitTestCase {
 				$this->assertStringContainsString( 'notice-error', $output, $case['test_condition_name'] );
 				$this->assertStringContainsString( 'is not running because', $output, $case['test_condition_name'] . '（理由）' );
 				$this->assertStringContainsString( 'action=deactivate', $output, $case['test_condition_name'] . '（無効化リンク）' );
+				$this->assertStringContainsString( 'The old plugin keeps working in the meantime.', $output, $case['test_condition_name'] . '（休止中も前身が動いている旨）' );
+				$this->assertStringNotContainsString( 'activate this plugin again', $output, $case['test_condition_name'] . '（通知には再有効化の案内は不要）' );
 			} else {
 				$this->assertSame( '', $output, $case['test_condition_name'] );
 			}

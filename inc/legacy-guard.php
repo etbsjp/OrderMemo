@@ -283,6 +283,10 @@ function etbs_ont_block_activation_while_legacy_active() {
 		$message .= '<p>' . $paragraph . '</p>';
 	}
 
+	// The Deactivate button returns to the plugins list with this plugin still inactive, so say what comes next.
+	// 無効化ボタンはこのプラグインが未有効のまま一覧へ戻るため、次の手順を伝える.
+	$message .= '<p>' . esc_html__( 'After deactivating it, activate this plugin again.', 'etbs-order-note-templates' ) . '</p>';
+
 	$message .= '<p><a class="button" href="' . esc_url( etbs_ont_get_legacy_deactivate_url( $legacy_plugin ) ) . '">'
 		. sprintf(
 			/* translators: %s: Name of the old plugin. */
@@ -358,6 +362,8 @@ function etbs_ont_render_legacy_notice() {
 		<?php foreach ( $paragraphs as $paragraph ) : ?>
 			<p><?php echo wp_kses_post( $paragraph ); ?></p>
 		<?php endforeach; ?>
+		<?php // Tell the user the site is not affected while this plugin stands down. / 休止中も前身が動いていることを伝える. ?>
+		<p><?php echo esc_html__( 'The old plugin keeps working in the meantime.', 'etbs-order-note-templates' ); ?></p>
 		<?php if ( $can_deactivate ) : ?>
 			<p>
 				<a class="button" href="<?php echo esc_url( etbs_ont_get_legacy_deactivate_url( $legacy_plugin ) ); ?>">
