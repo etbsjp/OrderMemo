@@ -5,11 +5,17 @@ if ( ! defined( 'ABSPATH' ) ) { exit; }
 /* WooCommerce 未導入時の通知
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_admin_notice_requires_wc' ) ) {
+	/**
+	 * Prints an admin notice when WooCommerce is not active.
+	 * WooCommerce が有効でないとき、管理画面に通知を出す。
+	 *
+	 * @return void
+	 */
 	function ormm_admin_notice_requires_wc() {
 		if ( class_exists( 'WooCommerce' ) ) { return; }
 		if ( ! current_user_can( 'activate_plugins' ) ) { return; }
 		echo '<div class="notice notice-error"><p>'
-			. esc_html__( 'OrderMemoの利用にはWooCommerceが必要です。WooCommerceをインストール・有効化してください。', 'ordermemo' )
+			. esc_html__( 'OrderMemoの利用にはWooCommerceが必要です。WooCommerceをインストール・有効化してください。', 'etbs-order-note-templates' )
 			. '</p></div>';
 	}
 	add_action( 'admin_notices', 'ormm_admin_notice_requires_wc' );
@@ -19,9 +25,15 @@ if ( ! function_exists( 'ormm_admin_notice_requires_wc' ) ) {
 /* HPOS（高性能注文ストレージ）互換の宣言
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_declare_hpos_compat' ) ) {
+	/**
+	 * Declares compatibility with WooCommerce High-Performance Order Storage (HPOS).
+	 * WooCommerce の高性能注文ストレージ（HPOS）への対応を宣言する。
+	 *
+	 * @return void
+	 */
 	function ormm_declare_hpos_compat() {
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', ORMM_PLUGIN_FILE, true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', ETBS_ONT_PLUGIN_FILE, true );
 		}
 	}
 	add_action( 'before_woocommerce_init', 'ormm_declare_hpos_compat' );
@@ -33,21 +45,27 @@ if ( ! function_exists( 'ormm_declare_hpos_compat' ) ) {
 /* プレーンテキストエリアで編集する（エディタは使わない）。
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_register_post_type' ) ) {
+	/**
+	 * Registers the post type that stores the templates.
+	 * テンプレートを保存する投稿タイプを登録する。
+	 *
+	 * @return void
+	 */
 	function ormm_register_post_type() {
 		register_post_type( 'ormm_template', [
 			'labels' => [
-				'name'               => __( '注文メモテンプレート', 'ordermemo' ),
+				'name'               => __( '注文メモテンプレート', 'etbs-order-note-templates' ),
 				// メニュー名は「注文」で始めない。WooCommerceが処理中件数バッジを
 				// 「注文」前方一致の最初のサブメニューに付けるため、横取りしてしまう。
-				'menu_name'          => __( 'メモテンプレート', 'ordermemo' ),
-				'singular_name'      => __( '注文メモテンプレート', 'ordermemo' ),
-				'add_new'            => __( '新規追加', 'ordermemo' ),
-				'add_new_item'       => __( 'テンプレートを追加', 'ordermemo' ),
-				'edit_item'          => __( 'テンプレートを編集', 'ordermemo' ),
-				'new_item'           => __( '新規テンプレート', 'ordermemo' ),
-				'search_items'       => __( 'テンプレートを検索', 'ordermemo' ),
-				'not_found'          => __( 'テンプレートが見つかりません', 'ordermemo' ),
-				'not_found_in_trash' => __( 'ゴミ箱にテンプレートはありません', 'ordermemo' ),
+				'menu_name'          => __( 'メモテンプレート', 'etbs-order-note-templates' ),
+				'singular_name'      => __( '注文メモテンプレート', 'etbs-order-note-templates' ),
+				'add_new'            => __( '新規追加', 'etbs-order-note-templates' ),
+				'add_new_item'       => __( 'テンプレートを追加', 'etbs-order-note-templates' ),
+				'edit_item'          => __( 'テンプレートを編集', 'etbs-order-note-templates' ),
+				'new_item'           => __( '新規テンプレート', 'etbs-order-note-templates' ),
+				'search_items'       => __( 'テンプレートを検索', 'etbs-order-note-templates' ),
+				'not_found'          => __( 'テンプレートが見つかりません', 'etbs-order-note-templates' ),
+				'not_found_in_trash' => __( 'ゴミ箱にテンプレートはありません', 'etbs-order-note-templates' ),
 			],
 			'public'          => false,
 			'show_ui'         => true,
@@ -82,15 +100,21 @@ if ( ! function_exists( 'ormm_get_tags' ) ) {
 }
 
 if ( ! function_exists( 'ormm_get_tag_descriptions' ) ) {
+	/**
+	 * Returns the description of each merge tag, keyed by tag.
+	 * 差し込みタグごとの説明を、タグをキーにして返す。
+	 *
+	 * @return string[] Descriptions keyed by tag, such as "{order_number}".
+	 */
 	function ormm_get_tag_descriptions() {
 		return [
-			'{customer_name}'   => __( '請求先の氏名', 'ordermemo' ),
-			'{order_number}'    => __( '注文番号', 'ordermemo' ),
-			'{order_date}'      => __( '注文日', 'ordermemo' ),
-			'{order_total}'     => __( '合計金額（通貨記号付き）', 'ordermemo' ),
-			'{payment_method}'  => __( '支払方法', 'ordermemo' ),
-			'{shipping_method}' => __( '配送方法', 'ordermemo' ),
-			'{site_name}'       => __( 'サイト名', 'ordermemo' ),
+			'{customer_name}'   => __( '請求先の氏名', 'etbs-order-note-templates' ),
+			'{order_number}'    => __( '注文番号', 'etbs-order-note-templates' ),
+			'{order_date}'      => __( '注文日', 'etbs-order-note-templates' ),
+			'{order_total}'     => __( '合計金額（通貨記号付き）', 'etbs-order-note-templates' ),
+			'{payment_method}'  => __( '支払方法', 'etbs-order-note-templates' ),
+			'{shipping_method}' => __( '配送方法', 'etbs-order-note-templates' ),
+			'{site_name}'       => __( 'サイト名', 'etbs-order-note-templates' ),
 		];
 	}
 }
@@ -99,10 +123,16 @@ if ( ! function_exists( 'ormm_get_tag_descriptions' ) ) {
 /* テンプレート編集画面のメタボックス
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_add_meta_boxes' ) ) {
+	/**
+	 * Adds the meta boxes to the template edit screen.
+	 * テンプレート編集画面にメタボックスを追加する。
+	 *
+	 * @return void
+	 */
 	function ormm_add_meta_boxes() {
 		add_meta_box(
 			'ormm_content_box',
-			__( 'テンプレート本文', 'ordermemo' ),
+			__( 'テンプレート本文', 'etbs-order-note-templates' ),
 			'ormm_render_content_box',
 			'ormm_template',
 			'normal',
@@ -110,7 +140,7 @@ if ( ! function_exists( 'ormm_add_meta_boxes' ) ) {
 		);
 		add_meta_box(
 			'ormm_tags_box',
-			__( '利用できる差し込みタグ', 'ordermemo' ),
+			__( '利用できる差し込みタグ', 'etbs-order-note-templates' ),
 			'ormm_render_tags_box',
 			'ormm_template',
 			'side',
@@ -121,18 +151,31 @@ if ( ! function_exists( 'ormm_add_meta_boxes' ) ) {
 }
 
 if ( ! function_exists( 'ormm_render_content_box' ) ) {
+	/**
+	 * Prints the template body meta box.
+	 * テンプレート本文のメタボックスを出力する。
+	 *
+	 * @param WP_Post $post The template being edited.
+	 * @return void
+	 */
 	function ormm_render_content_box( $post ) {
 		wp_nonce_field( 'ormm_save_content', 'ormm_content_nonce' );
 		echo '<textarea name="ormm_content" rows="10" style="width:100%;" placeholder="'
-			. esc_attr__( '例：{customer_name} 様　ご注文番号 {order_number} の商品を本日発送いたしました。', 'ordermemo' )
+			. esc_attr__( '例：{customer_name} 様　ご注文番号 {order_number} の商品を本日発送いたしました。', 'etbs-order-note-templates' )
 			. '">' . esc_textarea( $post->post_content ) . '</textarea>';
 		echo '<p class="description">'
-			. esc_html__( 'プレーンテキストで入力してください。差し込みタグは注文編集画面での挿入時に、その注文のデータに展開されます。', 'ordermemo' )
+			. esc_html__( 'プレーンテキストで入力してください。差し込みタグは注文編集画面での挿入時に、その注文のデータに展開されます。', 'etbs-order-note-templates' )
 			. '</p>';
 	}
 }
 
 if ( ! function_exists( 'ormm_render_tags_box' ) ) {
+	/**
+	 * Prints the meta box that lists the available merge tags.
+	 * 利用できる差し込みタグの一覧のメタボックスを出力する。
+	 *
+	 * @return void
+	 */
 	function ormm_render_tags_box() {
 		echo '<table class="widefat striped"><tbody>';
 		foreach ( ormm_get_tag_descriptions() as $tag => $desc ) {
@@ -140,7 +183,7 @@ if ( ! function_exists( 'ormm_render_tags_box' ) ) {
 		}
 		echo '</tbody></table>';
 		echo '<p class="description">'
-			. esc_html__( '開発者向け：ormm_tags フィルターで独自タグを追加できます。', 'ordermemo' )
+			. esc_html__( '開発者向け：ormm_tags フィルターで独自タグを追加できます。', 'etbs-order-note-templates' )
 			. '</p>';
 	}
 }
@@ -198,6 +241,13 @@ if ( ! function_exists( 'ormm_get_current_order_id' ) ) {
 /* 注文編集画面へのスクリプト読み込み
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_enqueue_order_script' ) ) {
+	/**
+	 * Loads the insert script on the order edit screen.
+	 * 注文編集画面に、挿入用のスクリプトを読み込む。
+	 *
+	 * @param string $hook Hook suffix of the current admin screen.
+	 * @return void
+	 */
 	function ormm_enqueue_order_script( $hook ) {
 		$order_id = ormm_get_current_order_id( $hook );
 		if ( ! $order_id || ! function_exists( 'wc_get_order' ) ) { return; }
@@ -223,7 +273,7 @@ if ( ! function_exists( 'ormm_enqueue_order_script' ) ) {
 			'ormm-admin',
 			plugins_url( 'js/ordermemo-admin.js', __FILE__ ),
 			[],
-			ORMM_VERSION,
+			ETBS_ONT_VERSION,
 			true
 		);
 
@@ -233,10 +283,10 @@ if ( ! function_exists( 'ormm_enqueue_order_script' ) ) {
 			'orderId'   => $order_id,
 			'templates' => $list,
 			'i18n'      => [
-				'selectLabel'  => __( 'テンプレートから挿入', 'ordermemo' ),
-				'placeholder'  => __( 'テンプレートを選択', 'ordermemo' ),
-				'insertButton' => __( '挿入', 'ordermemo' ),
-				'insertError'  => __( 'テンプレートの読み込みに失敗しました。ページを再読み込みしてやり直してください。', 'ordermemo' ),
+				'selectLabel'  => __( 'テンプレートから挿入', 'etbs-order-note-templates' ),
+				'placeholder'  => __( 'テンプレートを選択', 'etbs-order-note-templates' ),
+				'insertButton' => __( '挿入', 'etbs-order-note-templates' ),
+				'insertError'  => __( 'テンプレートの読み込みに失敗しました。ページを再読み込みしてやり直してください。', 'etbs-order-note-templates' ),
 			],
 		] );
 	}
@@ -247,14 +297,20 @@ if ( ! function_exists( 'ormm_enqueue_order_script' ) ) {
 /* AJAX: テンプレート本文を注文データで展開して返す
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
+	/**
+	 * AJAX handler: returns a template body with the order's data filled in.
+	 * AJAX の受け口。テンプレート本文を、注文のデータで展開して返す。
+	 *
+	 * @return void
+	 */
 	function ormm_ajax_render_template() {
 		check_ajax_referer( 'ormm_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'edit_shop_orders' ) ) {
-			wp_send_json_error( [ 'message' => __( '権限がありません', 'ordermemo' ) ] );
+			wp_send_json_error( array( 'message' => __( '権限がありません', 'etbs-order-note-templates' ) ) );
 		}
 		if ( ! function_exists( 'wc_get_order' ) ) {
-			wp_send_json_error( [ 'message' => __( 'WooCommerceが有効ではありません', 'ordermemo' ) ] );
+			wp_send_json_error( array( 'message' => __( 'WooCommerceが有効ではありません', 'etbs-order-note-templates' ) ) );
 		}
 
 		$template_id = (int) ( $_POST['template_id'] ?? 0 );
@@ -262,16 +318,16 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 
 		$template = get_post( $template_id );
 		if ( ! $template || 'ormm_template' !== $template->post_type || 'publish' !== $template->post_status ) {
-			wp_send_json_error( [ 'message' => __( 'テンプレートが見つかりません', 'ordermemo' ) ] );
+			wp_send_json_error( array( 'message' => __( 'テンプレートが見つかりません', 'etbs-order-note-templates' ) ) );
 		}
 
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
-			wp_send_json_error( [ 'message' => __( '注文が見つかりません', 'ordermemo' ) ] );
+			wp_send_json_error( array( 'message' => __( '注文が見つかりません', 'etbs-order-note-templates' ) ) );
 		}
 
 		$text = strtr( $template->post_content, ormm_get_tags( $order ) );
-		wp_send_json_success( [ 'text' => $text ] );
+		wp_send_json_success( array( 'text' => $text ) );
 	}
 	add_action( 'wp_ajax_ormm_render_template', 'ormm_ajax_render_template' );
 }
@@ -280,12 +336,22 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 /* 寄付・開発依頼リンク（プラグイン一覧行）
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
+	/**
+	 * Adds the support links to this plugin's row in the plugins list.
+	 * プラグイン一覧の、このプラグインの行にサポート用のリンクを足す。
+	 *
+	 * @param string[] $links Row meta links.
+	 * @param string   $file  Plugin basename of the row.
+	 * @return string[] Row meta links.
+	 */
 	function ormm_plugin_row_meta( $links, $file ) {
-		if ( plugin_basename( ORMM_PLUGIN_FILE ) !== $file ) { return $links; }
+		if ( plugin_basename( ETBS_ONT_PLUGIN_FILE ) !== $file ) {
+			return $links;
+		}
 		$links[] = '<a href="https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">'
-			. esc_html__( '開発を支援', 'ordermemo' ) . '</a>';
+			. esc_html__( '開発を支援', 'etbs-order-note-templates' ) . '</a>';
 		$links[] = '<a href="https://etbs.jp/product-category/wordpress-tools/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">'
-			. esc_html__( '開発のご依頼', 'ordermemo' ) . '</a>';
+			. esc_html__( '開発のご依頼', 'etbs-order-note-templates' ) . '</a>';
 		return $links;
 	}
 	add_filter( 'plugin_row_meta', 'ormm_plugin_row_meta', 10, 2 );
