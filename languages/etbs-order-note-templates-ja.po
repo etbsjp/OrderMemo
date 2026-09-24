@@ -210,7 +210,7 @@ msgstr "開発を支援"
 #: inc/func.php:395
 #, php-format
 msgid "If you find this plugin useful, %s."
-msgstr "OrderMemoが役に立ったら、%s。"
+msgstr "OrderMemoが役に立ったら、%s からどうぞ。"
 
 #. translators: 1: Name of the old plugin. 2: Version number.
 #: inc/legacy-guard.php:182

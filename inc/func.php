@@ -177,7 +177,10 @@ if ( ! function_exists( 'ormm_render_content_box' ) ) {
 			. esc_html__( 'Placeholders are replaced with the data of the order when you insert the template on the order edit screen.', 'etbs-order-note-templates' )
 			. ' '
 			. esc_html__( 'HTML tags are removed when the template is saved.', 'etbs-order-note-templates' )
-			. ' '
+			. '</p>';
+		// The heavier warning gets its own paragraph so it is not buried at the end.
+		// 重い注意は別の段落にして、末尾に埋もれさせない.
+		echo '<p class="description">'
 			. esc_html__( 'If you add the note as a "Note to customer", it is emailed to the customer, so check the text before you click "Add note".', 'etbs-order-note-templates' )
 			. '</p>';
 	}

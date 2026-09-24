@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-24T06:51:34+00:00\n"
+"POT-Creation-Date: 2026-09-24T06:56:13+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: etbs-order-note-templates\n"
@@ -140,72 +140,72 @@ msgstr ""
 msgid "HTML tags are removed when the template is saved."
 msgstr ""
 
-#: inc/func.php:181
+#: inc/func.php:184
 msgid "If you add the note as a \"Note to customer\", it is emailed to the customer, so check the text before you click \"Add note\"."
 msgstr ""
 
 #. translators: %s: name of the filter hook, wrapped in a code tag. Do not translate it.
-#: inc/func.php:202
+#: inc/func.php:205
 #, php-format
 msgid "For developers: you can add your own placeholders with the %s filter."
 msgstr ""
 
-#: inc/func.php:304
+#: inc/func.php:307
 msgid "Insert from template"
 msgstr ""
 
-#: inc/func.php:305
+#: inc/func.php:308
 msgid "Select a template"
 msgstr ""
 
-#: inc/func.php:306
+#: inc/func.php:309
 msgid "Insert"
 msgstr ""
 
-#: inc/func.php:308
+#: inc/func.php:311
 msgid "Failed to load the template."
 msgstr ""
 
-#: inc/func.php:308
-#: inc/func.php:340
-#: inc/func.php:345
+#: inc/func.php:311
+#: inc/func.php:343
+#: inc/func.php:348
 msgid "Reload the page and try again."
 msgstr ""
 
-#: inc/func.php:329
+#: inc/func.php:332
 msgid "You do not have permission to insert templates."
 msgstr ""
 
-#: inc/func.php:329
+#: inc/func.php:332
 msgid "Ask a site administrator to grant you access."
 msgstr ""
 
-#: inc/func.php:332
+#: inc/func.php:335
 msgid "WooCommerce is not active."
 msgstr ""
 
-#: inc/func.php:332
+#: inc/func.php:335
 msgid "Activate WooCommerce and try again."
 msgstr ""
 
-#: inc/func.php:340
+#: inc/func.php:343
 msgid "The template could not be found; it may have been deleted or unpublished."
 msgstr ""
 
-#: inc/func.php:345
+#: inc/func.php:348
 msgid "The order could not be found; it may have been deleted."
 msgstr ""
 
-#: inc/func.php:371
+#: inc/func.php:374
 msgid "Support development"
 msgstr ""
 
-#: inc/func.php:392
+#: inc/func.php:395
 msgid "consider supporting its development"
 msgstr ""
 
 #. translators: %s: link to the donation page. The link text is "consider supporting its development".
-#: inc/func.php:395
+#: inc/func.php:398
 #, php-format
 msgid "If you find this plugin useful, %s."
 msgstr ""
