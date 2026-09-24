@@ -14,8 +14,11 @@ if ( ! function_exists( 'ormm_admin_notice_requires_wc' ) ) {
 	function ormm_admin_notice_requires_wc() {
 		if ( class_exists( 'WooCommerce' ) ) { return; }
 		if ( ! current_user_can( 'activate_plugins' ) ) { return; }
+		// One sentence per translatable string. / 翻訳文字列は 1 文ずつ.
 		echo '<div class="notice notice-error"><p>'
-			. esc_html__( 'OrderMemoの利用にはWooCommerceが必要です。WooCommerceをインストール・有効化してください。', 'etbs-order-note-templates' )
+			. esc_html__( 'Order Note Templates requires WooCommerce.', 'etbs-order-note-templates' )
+			. ' '
+			. esc_html__( 'Please install and activate WooCommerce.', 'etbs-order-note-templates' )
 			. '</p></div>';
 	}
 	add_action( 'admin_notices', 'ormm_admin_notice_requires_wc' );
@@ -54,18 +57,22 @@ if ( ! function_exists( 'ormm_register_post_type' ) ) {
 	function ormm_register_post_type() {
 		register_post_type( 'ormm_template', [
 			'labels' => [
-				'name'               => __( '注文メモテンプレート', 'etbs-order-note-templates' ),
-				// メニュー名は「注文」で始めない。WooCommerceが処理中件数バッジを
-				// 「注文」前方一致の最初のサブメニューに付けるため、横取りしてしまう。
-				'menu_name'          => __( 'メモテンプレート', 'etbs-order-note-templates' ),
-				'singular_name'      => __( '注文メモテンプレート', 'etbs-order-note-templates' ),
-				'add_new'            => __( '新規追加', 'etbs-order-note-templates' ),
-				'add_new_item'       => __( 'テンプレートを追加', 'etbs-order-note-templates' ),
-				'edit_item'          => __( 'テンプレートを編集', 'etbs-order-note-templates' ),
-				'new_item'           => __( '新規テンプレート', 'etbs-order-note-templates' ),
-				'search_items'       => __( 'テンプレートを検索', 'etbs-order-note-templates' ),
-				'not_found'          => __( 'テンプレートが見つかりません', 'etbs-order-note-templates' ),
-				'not_found_in_trash' => __( 'ゴミ箱にテンプレートはありません', 'etbs-order-note-templates' ),
+				'name'               => __( 'Order Note Templates', 'etbs-order-note-templates' ),
+				// Do not start the menu name with "Orders" (or its translation). WooCommerce puts the
+				// processing-orders count badge on the first submenu whose title starts with "Orders"
+				// (prefix match), so a menu name that starts with it would take the badge away.
+				// メニュー名は「注文」で始めない。WooCommerce が処理中件数バッジを、名前が
+				// "Orders" で始まる最初のサブメニューに付ける（前方一致）ため、横取りしてしまう。
+				/* translators: Do not start with the translation of "Orders" (for example "注文" in Japanese). WooCommerce attaches the processing-orders count badge to the first submenu whose title starts with "Orders", so a title starting with it would take the badge. */
+				'menu_name'          => __( 'Note Templates', 'etbs-order-note-templates' ),
+				'singular_name'      => __( 'Order Note Template', 'etbs-order-note-templates' ),
+				'add_new'            => __( 'Add New', 'etbs-order-note-templates' ),
+				'add_new_item'       => __( 'Add Template', 'etbs-order-note-templates' ),
+				'edit_item'          => __( 'Edit Template', 'etbs-order-note-templates' ),
+				'new_item'           => __( 'New Template', 'etbs-order-note-templates' ),
+				'search_items'       => __( 'Search Templates', 'etbs-order-note-templates' ),
+				'not_found'          => __( 'No templates found.', 'etbs-order-note-templates' ),
+				'not_found_in_trash' => __( 'No templates found in Trash.', 'etbs-order-note-templates' ),
 			],
 			'public'          => false,
 			'show_ui'         => true,
@@ -108,13 +115,13 @@ if ( ! function_exists( 'ormm_get_tag_descriptions' ) ) {
 	 */
 	function ormm_get_tag_descriptions() {
 		return [
-			'{customer_name}'   => __( '請求先の氏名', 'etbs-order-note-templates' ),
-			'{order_number}'    => __( '注文番号', 'etbs-order-note-templates' ),
-			'{order_date}'      => __( '注文日', 'etbs-order-note-templates' ),
-			'{order_total}'     => __( '合計金額（通貨記号付き）', 'etbs-order-note-templates' ),
-			'{payment_method}'  => __( '支払方法', 'etbs-order-note-templates' ),
-			'{shipping_method}' => __( '配送方法', 'etbs-order-note-templates' ),
-			'{site_name}'       => __( 'サイト名', 'etbs-order-note-templates' ),
+			'{customer_name}'   => __( 'Billing name', 'etbs-order-note-templates' ),
+			'{order_number}'    => __( 'Order number', 'etbs-order-note-templates' ),
+			'{order_date}'      => __( 'Order date', 'etbs-order-note-templates' ),
+			'{order_total}'     => __( 'Order total, with the currency symbol', 'etbs-order-note-templates' ),
+			'{payment_method}'  => __( 'Payment method', 'etbs-order-note-templates' ),
+			'{shipping_method}' => __( 'Shipping method', 'etbs-order-note-templates' ),
+			'{site_name}'       => __( 'Site title', 'etbs-order-note-templates' ),
 		];
 	}
 }
@@ -132,7 +139,7 @@ if ( ! function_exists( 'ormm_add_meta_boxes' ) ) {
 	function ormm_add_meta_boxes() {
 		add_meta_box(
 			'ormm_content_box',
-			__( 'テンプレート本文', 'etbs-order-note-templates' ),
+			__( 'Template body', 'etbs-order-note-templates' ),
 			'ormm_render_content_box',
 			'ormm_template',
 			'normal',
@@ -140,7 +147,7 @@ if ( ! function_exists( 'ormm_add_meta_boxes' ) ) {
 		);
 		add_meta_box(
 			'ormm_tags_box',
-			__( '利用できる差し込みタグ', 'etbs-order-note-templates' ),
+			__( 'Available placeholders', 'etbs-order-note-templates' ),
 			'ormm_render_tags_box',
 			'ormm_template',
 			'side',
@@ -160,11 +167,18 @@ if ( ! function_exists( 'ormm_render_content_box' ) ) {
 	 */
 	function ormm_render_content_box( $post ) {
 		wp_nonce_field( 'ormm_save_content', 'ormm_content_nonce' );
-		echo '<textarea name="ormm_content" rows="10" style="width:100%;" placeholder="'
-			. esc_attr__( '例：{customer_name} 様　ご注文番号 {order_number} の商品を本日発送いたしました。', 'etbs-order-note-templates' )
+		echo '<textarea name="ormm_content" rows="10" class="widefat" placeholder="'
+			. esc_attr__( 'Hi {customer_name}, your order #{order_number} has been shipped today.', 'etbs-order-note-templates' )
 			. '">' . esc_textarea( $post->post_content ) . '</textarea>';
+		// One sentence per translatable string. / 翻訳文字列は 1 文ずつ.
 		echo '<p class="description">'
-			. esc_html__( 'プレーンテキストで入力してください。差し込みタグは注文編集画面での挿入時に、その注文のデータに展開されます。', 'etbs-order-note-templates' )
+			. esc_html__( 'Enter plain text.', 'etbs-order-note-templates' )
+			. ' '
+			. esc_html__( 'Placeholders are replaced with the data of the order when you insert the template on the order edit screen.', 'etbs-order-note-templates' )
+			. ' '
+			. esc_html__( 'HTML tags are removed when the template is saved.', 'etbs-order-note-templates' )
+			. ' '
+			. esc_html__( 'If you add the note as a "Note to customer", it is emailed to the customer, so check the text before you click "Add note".', 'etbs-order-note-templates' )
 			. '</p>';
 	}
 }
@@ -183,7 +197,11 @@ if ( ! function_exists( 'ormm_render_tags_box' ) ) {
 		}
 		echo '</tbody></table>';
 		echo '<p class="description">'
-			. esc_html__( '開発者向け：ormm_tags フィルターで独自タグを追加できます。', 'etbs-order-note-templates' )
+			. sprintf(
+				/* translators: %s: name of the filter hook, wrapped in a code tag. Do not translate it. */
+				esc_html__( 'For developers: you can add your own placeholders with the %s filter.', 'etbs-order-note-templates' ),
+				'<code>ormm_tags</code>'
+			)
 			. '</p>';
 	}
 }
@@ -283,10 +301,11 @@ if ( ! function_exists( 'ormm_enqueue_order_script' ) ) {
 			'orderId'   => $order_id,
 			'templates' => $list,
 			'i18n'      => [
-				'selectLabel'  => __( 'テンプレートから挿入', 'etbs-order-note-templates' ),
-				'placeholder'  => __( 'テンプレートを選択', 'etbs-order-note-templates' ),
-				'insertButton' => __( '挿入', 'etbs-order-note-templates' ),
-				'insertError'  => __( 'テンプレートの読み込みに失敗しました。ページを再読み込みしてやり直してください。', 'etbs-order-note-templates' ),
+				'selectLabel'  => __( 'Insert from template', 'etbs-order-note-templates' ),
+				'placeholder'  => __( 'Select a template', 'etbs-order-note-templates' ),
+				'insertButton' => __( 'Insert', 'etbs-order-note-templates' ),
+				// One sentence per translatable string. / 翻訳文字列は 1 文ずつ.
+				'insertError'  => __( 'Failed to load the template.', 'etbs-order-note-templates' ) . ' ' . __( 'Reload the page and try again.', 'etbs-order-note-templates' ),
 			],
 		] );
 	}
@@ -307,10 +326,10 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 		check_ajax_referer( 'ormm_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'edit_shop_orders' ) ) {
-			wp_send_json_error( array( 'message' => __( '権限がありません', 'etbs-order-note-templates' ) ) );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to insert templates.', 'etbs-order-note-templates' ) . ' ' . __( 'Ask a site administrator to grant you access.', 'etbs-order-note-templates' ) ) );
 		}
 		if ( ! function_exists( 'wc_get_order' ) ) {
-			wp_send_json_error( array( 'message' => __( 'WooCommerceが有効ではありません', 'etbs-order-note-templates' ) ) );
+			wp_send_json_error( array( 'message' => __( 'WooCommerce is not active.', 'etbs-order-note-templates' ) . ' ' . __( 'Activate WooCommerce and try again.', 'etbs-order-note-templates' ) ) );
 		}
 
 		$template_id = (int) ( $_POST['template_id'] ?? 0 );
@@ -318,12 +337,12 @@ if ( ! function_exists( 'ormm_ajax_render_template' ) ) {
 
 		$template = get_post( $template_id );
 		if ( ! $template || 'ormm_template' !== $template->post_type || 'publish' !== $template->post_status ) {
-			wp_send_json_error( array( 'message' => __( 'テンプレートが見つかりません', 'etbs-order-note-templates' ) ) );
+			wp_send_json_error( array( 'message' => __( 'The template could not be found; it may have been deleted or unpublished.', 'etbs-order-note-templates' ) . ' ' . __( 'Reload the page and try again.', 'etbs-order-note-templates' ) ) );
 		}
 
 		$order = wc_get_order( $order_id );
 		if ( ! $order ) {
-			wp_send_json_error( array( 'message' => __( '注文が見つかりません', 'etbs-order-note-templates' ) ) );
+			wp_send_json_error( array( 'message' => __( 'The order could not be found; it may have been deleted.', 'etbs-order-note-templates' ) . ' ' . __( 'Reload the page and try again.', 'etbs-order-note-templates' ) ) );
 		}
 
 		$text = strtr( $template->post_content, ormm_get_tags( $order ) );
@@ -349,9 +368,7 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 			return $links;
 		}
 		$links[] = '<a href="https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">'
-			. esc_html__( '開発を支援', 'etbs-order-note-templates' ) . '</a>';
-		$links[] = '<a href="https://etbs.jp/product-category/wordpress-tools/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">'
-			. esc_html__( '開発のご依頼', 'etbs-order-note-templates' ) . '</a>';
+			. esc_html__( 'Support development', 'etbs-order-note-templates' ) . '</a>';
 		return $links;
 	}
 	add_filter( 'plugin_row_meta', 'ormm_plugin_row_meta', 10, 2 );
@@ -361,10 +378,23 @@ if ( ! function_exists( 'ormm_plugin_row_meta' ) ) {
 /* 寄付・開発依頼リンク（テンプレート一覧・編集画面のフッター）
 /*-------------------------------------------*/
 if ( ! function_exists( 'ormm_admin_footer_text' ) ) {
+	/**
+	 * Replaces the admin footer text on the template screens with a support link.
+	 * テンプレートの画面のフッター文言を、支援リンクだけのものに差し替える。
+	 *
+	 * @param string $text Original footer text.
+	 * @return string Footer text.
+	 */
 	function ormm_admin_footer_text( $text ) {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 		if ( ! $screen || 'ormm_template' !== $screen->post_type ) { return $text; }
-		return 'OrderMemoが役に立ったら <a href="https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">開発を支援</a>、カスタマイズは <a href="https://etbs.jp/product-category/wordpress-tools/?utm_source=ordermemo&utm_medium=plugin" target="_blank" rel="noopener noreferrer">開発のご依頼</a> からどうぞ。';
+		$link = '<a href="' . esc_url( 'https://etbs.jp/product/donate/?utm_source=ordermemo&utm_medium=plugin' ) . '" target="_blank" rel="noopener noreferrer">'
+			. esc_html__( 'consider supporting its development', 'etbs-order-note-templates' ) . '</a>';
+		return sprintf(
+			/* translators: %s: link to the donation page. The link text is "consider supporting its development". */
+			esc_html__( 'If you find this plugin useful, %s.', 'etbs-order-note-templates' ),
+			$link
+		);
 	}
 	add_filter( 'admin_footer_text', 'ormm_admin_footer_text' );
 }

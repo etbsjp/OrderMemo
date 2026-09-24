@@ -14,3 +14,16 @@
 /vendor/            export-ignore
 /tests/             export-ignore
 /.phpcs.xml.dist    export-ignore
+
+# languages/ (translation files)
+# Keep translations OUT of the first submission zip: the line below drops /languages/ from
+# `git archive`. The directory stays tracked in the repository (parent issue #12, answer B-2).
+# After the plugin is approved on wordpress.org, delete the line (and this note) so the
+# Japanese translation ships again. Until then Japanese sites see English.
+# To submit WITH translations, delete the line as well. Check with: git archive HEAD | tar -t | grep languages
+#
+# languages/（翻訳ファイル）: 初回提出の zip には含めないため、下の行で git archive から外している。
+# ディレクトリ自体は追跡する（親 issue #12 の回答 B-2）。承認後にこの行（とこの注釈）を削除すれば
+# 日本語訳が配布物に復活する。それまで日本語サイトでも英語表示になる。
+# 翻訳を含めて提出したいときも、この行を削除する。確認: git archive HEAD | tar -t | grep languages
+/languages/         export-ignore
