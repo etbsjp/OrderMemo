@@ -81,6 +81,13 @@ The two plugins cannot be active at the same time. Deactivate "ETBS OrderMemo" f
 
 Only deactivate the old plugin. If you want to delete it, first update it to version 1.0.3 or later. Earlier versions delete all of your templates when the plugin is deleted.
 
+== Screenshots ==
+
+1. On the order edit screen, choose a template above the "Add note" field, then click "Insert".
+2. The placeholders are replaced with the order's data, and the text is added to the note field, where you can review and edit it before you add the note.
+3. The list of templates under WooCommerce > Note Templates.
+4. The template edit screen, where the body is entered as plain text and the sidebar lists the placeholders you can use.
+
 == Changelog ==
 
 = 1.1.0 =
