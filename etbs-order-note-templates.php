@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       ETBS Order Note Templates for WooCommerce
  * Description:       Adds a template picker to the WooCommerce order edit screen, so you can put reusable notes (with placeholders) into an order note in one click.
- * Version:           1.0.4
+ * Version:           1.1.0
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
  * Author:            ETBS (DAI)
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'ETBS_ONT_VERSION', '1.0.4' );
+define( 'ETBS_ONT_VERSION', '1.1.0' );
 define( 'ETBS_ONT_PLUGIN_FILE', __FILE__ );
 
 /*
