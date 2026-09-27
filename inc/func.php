@@ -9,11 +9,19 @@ if ( ! function_exists( 'ormm_admin_notice_requires_wc' ) ) {
 	 * Prints an admin notice when WooCommerce is not active.
 	 * WooCommerce が有効でないとき、管理画面に通知を出す。
 	 *
+	 * Shown on the plugins list only, not on every admin screen.
+	 * 出すのはプラグイン一覧だけで、管理画面の全画面には出さない。
+	 *
 	 * @return void
 	 */
 	function ormm_admin_notice_requires_wc() {
 		if ( class_exists( 'WooCommerce' ) ) { return; }
 		if ( ! current_user_can( 'activate_plugins' ) ) { return; }
+		// Only on the plugins list, where WooCommerce can be activated. / WooCommerce を有効化できるプラグイン一覧だけ.
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+		if ( ! $screen || 'plugins' !== $screen->id ) {
+			return;
+		}
 		// One sentence per translatable string. / 翻訳文字列は 1 文ずつ.
 		echo '<div class="notice notice-error"><p>'
 			. esc_html__( 'Order Note Templates requires WooCommerce.', 'etbs-order-note-templates' )

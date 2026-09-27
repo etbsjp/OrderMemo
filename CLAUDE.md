@@ -186,3 +186,4 @@ WP_TESTS_MULTISITE=1 …同じ形…   # マルチサイトでも1回走らせ�
 - `test-pro-promotion.php` … 日本語サイトだけに出す有料版案内（判定関数・プラグイン一覧の行・
   テンプレート一覧の段落・`ormm_show_pro_promotion` による非表示）
 - `test-plugin-header.php` … ヘッダ・readme.txt・定数・Text Domain の整合
+- `test-requires-wc-notice.php` … WooCommerce が無いときの通知をプラグイン一覧だけに出す（Guideline 11 の審査指摘への対応。全画面に戻さない）
