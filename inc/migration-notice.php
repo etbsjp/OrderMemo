@@ -348,7 +348,7 @@ if ( ! function_exists( 'ormm_migration_render_announcement' ) ) {
 				<?php
 				esc_html_e( '同じ作者による同じプラグインで、公式ディレクトリに掲載するために名前を変えたものです。', 'ordermemo' );
 				esc_html_e( '今後の更新は公式版で届きます。', 'ordermemo' );
-				esc_html_e( 'この ETBS OrderMemo の更新は、この版が最後です。', 'ordermemo' );
+				esc_html_e( 'この ETBS OrderMemo に、新しい機能は追加しません。', 'ordermemo' );
 				?>
 			</p>
 			<p>
