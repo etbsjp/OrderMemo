@@ -19,7 +19,7 @@ msgstr ""
 #. Plugin Name of the plugin
 #: etbs-order-note-templates.php
 msgid "ETBS Order Note Templates for WooCommerce"
-msgstr "ETBS Order Note Templates（OrderMemo）"
+msgstr "ETBS Order Note Templates (OrderMemo)"
 
 #. Plugin URI of the plugin
 #: etbs-order-note-templates.php
@@ -29,7 +29,7 @@ msgstr ""
 #. Description of the plugin
 #: etbs-order-note-templates.php
 msgid "Adds a template picker to the WooCommerce order edit screen, so you can put reusable notes (with placeholders) into an order note in one click."
-msgstr "WooCommerceの注文編集画面にテンプレート挿入機能を追加し、定型文（差し込みタグ対応）をワンクリックで注文メモに入力できるプラグイン"
+msgstr "WooCommerce の注文編集画面にテンプレート挿入機能を追加し、定型文 (差し込みタグ対応) をワンクリックで注文メモに入力できるプラグイン。"
 
 #. Author of the plugin
 #: etbs-order-note-templates.php
@@ -43,11 +43,11 @@ msgstr ""
 
 #: inc/func.php:19
 msgid "Order Note Templates requires WooCommerce."
-msgstr "OrderMemoの利用にはWooCommerceが必要です。"
+msgstr "OrderMemo の利用には WooCommerce が必要です。"
 
 #: inc/func.php:21
 msgid "Please install and activate WooCommerce."
-msgstr "WooCommerceをインストール・有効化してください。"
+msgstr "WooCommerce をインストール・有効化してください。"
 
 #: inc/func.php:60
 msgid "Order Note Templates"
@@ -84,11 +84,11 @@ msgstr "テンプレートを検索"
 
 #: inc/func.php:74
 msgid "No templates found."
-msgstr "テンプレートが見つかりません"
+msgstr "テンプレートが見つかりません。"
 
 #: inc/func.php:75
 msgid "No templates found in Trash."
-msgstr "ゴミ箱にテンプレートはありません"
+msgstr "ゴミ箱にテンプレートはありません。"
 
 #: inc/func.php:118
 msgid "Billing name"
@@ -104,7 +104,7 @@ msgstr "注文日"
 
 #: inc/func.php:121
 msgid "Order total, with the currency symbol"
-msgstr "合計金額（通貨記号付き）"
+msgstr "合計金額 (通貨記号付き)"
 
 #: inc/func.php:122
 msgid "Payment method"
@@ -128,7 +128,7 @@ msgstr "利用できる差し込みタグ"
 
 #: inc/func.php:171
 msgid "Hi {customer_name}, your order #{order_number} has been shipped today."
-msgstr "例：{customer_name} 様　ご注文番号 {order_number} の商品を本日発送いたしました。"
+msgstr "例: {customer_name} 様、ご注文番号 {order_number} の商品を本日発送いたしました。"
 
 #: inc/func.php:175
 msgid "Enter plain text."
@@ -140,7 +140,7 @@ msgstr "差し込みタグは注文編集画面での挿入時に、その注文
 
 #: inc/func.php:179
 msgid "HTML tags are removed when the template is saved."
-msgstr "HTMLタグは保存時に除去されます。"
+msgstr "HTML タグは保存時に除去されます。"
 
 #: inc/func.php:181
 msgid "If you add the note as a \"Note to customer\", it is emailed to the customer, so check the text before you click \"Add note\"."
@@ -150,7 +150,7 @@ msgstr "「顧客へのメモ」として追加するとお客様にメールで
 #: inc/func.php:202
 #, php-format
 msgid "For developers: you can add your own placeholders with the %s filter."
-msgstr "開発者向け：%s フィルターで独自タグを追加できます。"
+msgstr "開発者向け: %s フィルターで独自タグを追加できます。"
 
 #: inc/func.php:304
 msgid "Insert from template"
@@ -184,11 +184,11 @@ msgstr "サイトの管理者に権限の付与を依頼してください。"
 
 #: inc/func.php:332
 msgid "WooCommerce is not active."
-msgstr "WooCommerceが有効ではありません。"
+msgstr "WooCommerce が有効ではありません。"
 
 #: inc/func.php:332
 msgid "Activate WooCommerce and try again."
-msgstr "WooCommerceを有効化してからやり直してください。"
+msgstr "WooCommerce を有効化してからやり直してください。"
 
 #: inc/func.php:340
 msgid "The template could not be found; it may have been deleted or unpublished."
@@ -210,7 +210,7 @@ msgstr "開発を支援"
 #: inc/func.php:395
 #, php-format
 msgid "If you find this plugin useful, %s."
-msgstr "OrderMemoが役に立ったら、%s からどうぞ。"
+msgstr "OrderMemo が役に立ったら、%s からどうぞ。"
 
 #. translators: 1: Name of the old plugin. 2: Version number.
 #: inc/legacy-guard.php:182
@@ -240,7 +240,7 @@ msgstr "保存済みのテンプレートは残ります。"
 #: inc/legacy-guard.php:278
 #, php-format
 msgid "ETBS Order Note Templates for WooCommerce was not activated because %s is still active on this site."
-msgstr "%s がこのサイトでまだ有効なため、ETBS Order Note Templates（OrderMemo）は有効化されませんでした。"
+msgstr "%s がこのサイトでまだ有効なため、ETBS Order Note Templates (OrderMemo) は有効化されませんでした。"
 
 #: inc/legacy-guard.php:288
 msgid "After deactivating it, activate this plugin again."
@@ -259,13 +259,13 @@ msgstr "プラグイン一覧へ戻る"
 
 #: inc/legacy-guard.php:302
 msgid "Cannot activate ETBS Order Note Templates for WooCommerce"
-msgstr "ETBS Order Note Templates（OrderMemo）を有効化できません"
+msgstr "ETBS Order Note Templates (OrderMemo) を有効化できません"
 
 #. translators: %s: Name of the old plugin.
 #: inc/legacy-guard.php:356
 #, php-format
 msgid "ETBS Order Note Templates for WooCommerce is not running because %s is still active on this site."
-msgstr "%s がこのサイトでまだ有効なため、ETBS Order Note Templates（OrderMemo）は動作していません。"
+msgstr "%s がこのサイトでまだ有効なため、ETBS Order Note Templates (OrderMemo) は動作していません。"
 
 #: inc/legacy-guard.php:366
 msgid "The old plugin keeps working in the meantime."
@@ -273,7 +273,7 @@ msgstr "それまでのあいだは、旧プラグインがそのまま動作し
 
 #: inc/func.php
 msgid "OrderMemo Pro (paid add-on)"
-msgstr "OrderMemo Pro（有料版）"
+msgstr "OrderMemo Pro (有料版)"
 
 #: inc/func.php
 msgid "(opens in a new tab)"
