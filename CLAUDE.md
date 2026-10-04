@@ -49,7 +49,8 @@ CLI 検証では Local の php.ini を `-c` で渡すこと。渡さないと「
 このプラグインでの当てはめ:
 
 - **残す** … CPT `ormm_template` の投稿（利用者が作った定型文）
-- **消す** … 該当なし（独自テーブルも cron も持たない）
+- **消す** … ユーザーメタ `ormm_migration_notice_dismissed`（1.0.5 で入れた入れ替え案内を
+  「今後表示しない」で消したかどうかの記録＝一時状態）。独自テーブルも cron も持たない
 
 ★ 1.0.2 までは `wp_delete_post( $id, true )` で `ormm_template` を全件、ゴミ箱を経由せず完全削除
 していた。1.0.3 で撤去済み。**削除ロジックを足し直さないこと。**
@@ -61,16 +62,36 @@ CLI 検証では Local の php.ini を `-c` で渡すこと。渡さないと「
 
 ## 版数
 
-版数の置き場は `ordermemo.php` の `Version:` ヘッダの1箇所（`readme.txt` は無い）。
+★★ **1.0.5 が `dist` 系列の最後の版。これ以降は版数を上げない**（下の「公式版への入れ替え案内」）。
+
+版数の置き場は3箇所。`ordermemo.php` の `Version:` ヘッダ、同じファイルの `ORMM_VERSION` 定数、
+`readme.txt` の `Stable tag:`。
 
 ```sh
-grep -n "^ \* Version:" ordermemo.php
+grep -n -E "^ \* Version:|ORMM_VERSION'" ordermemo.php; grep -n "^Stable tag:" readme.txt
 ```
 
-★ **`ORMM_VERSION` 定数（`ordermemo.php:18`）はヘッダと別に手で書かれており、既に不一致
-（ヘッダ 1.0.1 に対して `1.0.0` のまま）。** `inc/func.php:226` でスクリプト/スタイルの
-キャッシュバスターとして使われている。**版数を上げる際はこの定数も必ず揃えること**
-（揃え忘れても動作は壊れないが、更新後にブラウザキャッシュが残る）。
+★ **`ORMM_VERSION` 定数（`ordermemo.php:18`）はヘッダと別に手で書かれている。** 1.0.4 までは
+`1.0.2` のまま止まっていた（1.0.5 で揃えた）。`inc/func.php` でスクリプトのキャッシュバスターとして
+使われている。揃え忘れても動作は壊れないが、更新後にブラウザキャッシュが残る。
+
+## 公式版への入れ替え案内（1.0.5・最後の版）
+
+仕様の正本は https://github.com/etbsjp/OrderMemo/issues/26 。版数を上げた根拠は
+`~/.claude/etbs-plugin-rules.md` の「dist の版数を上げてよいのは次の5つだけ」の第5項で、**1回限り**。
+
+- 実装は `inc/migration-notice.php`。出す画面はプラグイン一覧（サイト・ネットワーク）と
+  テンプレート一覧だけ。状態は3つ（公式版が未設置／設置済みで未有効／公式版も有効）
+- ★ **手順の順番は「公式版をインストール → 旧版を無効化 → 公式版を有効化 → 旧版を削除」。**
+  公式版は旧版が有効な間は有効化を拒否する（`wporg` ブランチの `inc/legacy-guard.php`）ので、
+  EditLock の案内（先に有効化する）とは順番が違う。文面を EditLock に揃えにこないこと
+- ★ **案内を強める・出し直す・`ormm_migration_notice_dismissed` を新しい版で消す、はどれも不可**
+  （共通ルールの同じ節）。消した管理者に届く経路は `readme.txt` の `== Upgrade Notice ==` と
+  プラグイン一覧の行のリンクだけ
+- ★ `== Upgrade Notice ==` は **300 バイトまで**（PUC 同梱の `PucReadmeParser` が `substr()` で切る。
+  文字数ではなくバイト数なので、日本語は 100 文字で切れ、途中で切れると文字化けする）
+- PUC は外さない。外すと、旧スラッグ `ordermemo` を第三者が wordpress.org で取ったときに、
+  既存サイトがその更新を受け取ってしまう
 
 ## 配布物
 
