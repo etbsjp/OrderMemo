@@ -62,7 +62,7 @@ CLI 検証では Local の php.ini を `-c` で渡すこと。渡さないと「
 
 ## 版数
 
-★★ **1.0.5 が `dist` 系列の最後の版。これ以降は版数を上げない**（下の「公式版への入れ替え案内」）。
+★★ **1.0.5 が `dist` 系列の最後の版。これ以降、案内を理由には版数を上げない**（共通ルールの第1〜4項＝セキュリティ修正などは別）（下の「公式版への入れ替え案内」）。
 
 版数の置き場は3箇所。`ordermemo.php` の `Version:` ヘッダ、同じファイルの `ORMM_VERSION` 定数、
 `readme.txt` の `Stable tag:`。
@@ -86,7 +86,7 @@ grep -n -E "^ \* Version:|ORMM_VERSION'" ordermemo.php; grep -n "^Stable tag:" r
   公式版は旧版が有効な間は有効化を拒否する（`wporg` ブランチの `inc/legacy-guard.php`）ので、
   EditLock の案内（先に有効化する）とは順番が違う。文面を EditLock に揃えにこないこと
 - ★ **案内を強める・出し直す・`ormm_migration_notice_dismissed` を新しい版で消す、はどれも不可**
-  （共通ルールの同じ節）。消した管理者に届く経路は `readme.txt` の `== Upgrade Notice ==` と
+  （共通ルールの同じ節）。最初の案内（状態1）を消した管理者に届く経路は `readme.txt` の `== Upgrade Notice ==` と
   プラグイン一覧の行のリンクだけ
 - ★ `== Upgrade Notice ==` は **300 バイトまで**（PUC 同梱の `PucReadmeParser` が `substr()` で切る。
   文字数ではなくバイト数なので、日本語は 100 文字で切れ、途中で切れると文字化けする）
